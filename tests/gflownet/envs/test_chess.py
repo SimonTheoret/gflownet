@@ -2,7 +2,7 @@ import pytest
 
 from gflownet.envs.chess import GFlowChessEnv
 
-ACTION_SPACE_SIZE = 161
+ACTION_SPACE_SIZE = 140
 
 
 @pytest.fixture

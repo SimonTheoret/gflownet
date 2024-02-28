@@ -98,7 +98,7 @@ class GFlowNetEnv:
         self.policy_input_dim = len(self.state2policy())
 
     @abstractmethod
-    def get_action_space(self):
+    def get_action_space(self) -> List:
         """
         Constructs list with all possible actions (excluding end of sequence)
         """
