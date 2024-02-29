@@ -1,4 +1,4 @@
-"""Environment for chess"""
+"""Partial environment for chess"""
 
 from typing import List, Optional, Tuple
 
@@ -41,18 +41,19 @@ class GFlowChessEnv(GFlowNetEnv):
         # what player's turn it is, (white is 0, black is 1) the second int is the stage
         # (i.e. 0 for selecting the piece and 1 for moving it), the third element is fen
         # representation of the board (in a list) and the last int is what is
-        # the current piece selected (can be from 1 to 6). -1 state[3] indicates that no piece have been selected.
+        # the current piece selected (can be from 1 to 6). -1 state[3]
+        # indicates that no piece have been selected.
         self.eos = (-1, -1, -1)  # End of sequence action
 
     def get_action_space(self) -> List:
         """
-        Constructs list with all possible actions, including eos. An
-        action is represented by a tuple of length 3 (color, move or
-        piece, position or piece). The colors can be 0 for whites and
-        1 for black, the second position can either be 0 for piece or 1
-        for move and the last position of the action tuple can be a
-        position (with value in [0,63]) or piece (with value in
-        [1,6]).
+        Constructs list with all possible actions, including eos. An action is
+        represented by a tuple of length 3 (color, move or piece, position or
+        piece). The colors can be 0 for whites and 1 for black, the second
+        position can either be 0 when selecting the piece or 0 when selecting
+        where to place the piece on the board and the last position of the
+        action tuple can be a position (with value in [0,63]) or piece (with
+        value in [1,6]).
 
         """
         actions = []
@@ -120,7 +121,6 @@ class GFlowChessEnv(GFlowNetEnv):
                 else action  # if it is a bool, keep it there
                 for action in possible_actions
             ]
-
         return possible_actions
 
     def step(
@@ -160,23 +160,22 @@ class GFlowChessEnv(GFlowNetEnv):
         if action == self.eos:
             self.done = True
             self.n_actions += 1
-            return self.state, self.eos, True # type: ignore
-        # If action is not eos, then perform action
+            return self.state, self.eos, True  # type: ignore
+
+        # If action is not eos, then perform action. This is the main chunk !
         else:
-            move = self._convert_action_into_san(state = self.state, action = action)
+            move = self._convert_action_into_san(state=self.state, action=action)
             try:
-                self.board.push_san(move) #updates the board with the move
+                self.board.push_san(move)  # updates the board with the move
                 valid = True
+                self._update_state(action) # type: ignore
             except Exception:
                 valid = False
 
-            state_next = self._fen_to_list(self.board)
             if valid:
-                self.state = state_next
+                # the state was internally updated in self._update_state
                 self.n_actions += 1
             return self.state, action, valid
-
-
 
     def _fen_to_list(self, board: Board) -> list[str]:
         """
@@ -358,22 +357,25 @@ class GFlowChessEnv(GFlowNetEnv):
         piece_str = self._piece_to_str(color=action[0], piece=piece)
         return piece_str not in fen
 
-    def _update_state(self, action: Tuple) -> Tuple[List, bool]:
+    def _update_state(self, action: Tuple[int, int, int]) -> None:
         """
-        Update the states with the action.
+        Updates the state internally. This function should only be called if
+        the action is valid and the board has been updated.
 
         Parameters
         ----------
-        action: Tuple
-            Action to (try to) apply. Modifies the current state.
+        Action: Tuple
+            The (valid) action applied to the current state of the game.
 
         Returns
         -------
-        Returns a tuple containing the updated state at index 0 and a boolean
-        specifying if the action is valid or not.
+        Does not return.
         """
-        if action[1] == 0:
-            pass
-        if action[1] == 1:
-            pass
-        pass
+
+        new_state = [
+            self.state[0] + 1 % 2,
+            self.state[1] + 1 % 2,
+            self._fen_to_list(self.board),
+        ]  # incomplete state, needs the last piece
+        selected_piece = action[2] if action[1] == 0 else -1
+        new_state.append(selected_piece)
