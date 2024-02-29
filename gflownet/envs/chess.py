@@ -1,5 +1,6 @@
 """Partial environment for chess"""
 
+from itertools import combinations
 from typing import List, Optional, Tuple
 
 import chess
@@ -28,66 +29,44 @@ class GFlowChessEnv(GFlowNetEnv):
             'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
         """
-        self.board = Board(fen) if fen is not None else Board()  # Board
+        self.state = [Board(fen) if fen is not None else Board()]  # Board in a list
         self.eos = (-1, -1)  # End of sequence action
 
     def get_action_space(self) -> List:
-        pass
+        """
+        Returns all possible actions. An action is defined as a destination and
+        a move, i.e. as a pair of squares.
+
+        Returns
+        -------
+        Returns the list containing all the possibles actions.
+        """
+        lis = list(combinations([i for i in range(0,64)],2))
+        lis.append(self.eos)
+        return lis
+
 
     def get_mask_invalid_actions_forward(
         self,
         state: Optional[List] = None,
         done: Optional[bool] = None,
     ) -> List:
-        pass
-        # """
-        # Returns a list of length the action space with values:
-        #     - True if the forward action is invalid from the current state.
-        #     - False otherwise.
-        # """
-        #
-        # if state is None:
-        #     state = self.state
-        #
-        # if done is None:
-        #     done = self.done
-        #
-        # possible_actions = self.get_action_space()  # list all possibles actions
-        # if done:
-        #     return [
-        #         True for _ in range(self.action_space_dim)
-        #     ]  # If game is done, there is nothing to do!
-        #
-        # player, piece_or_move, fen, current_piece = state
-        # board = self._parse_fen_list_to_board(fen)
-        #
-        # # mask moves for the other player and movement/piece selection:
-        # possible_actions = [
-        #     action if action[0] == player and action[1] == piece_or_move else True
-        #     for action in possible_actions
-        # ]
-        #
-        # # Treat move and piece selection differently:
-        #
-        # # Case for selecting a piece
-        # if piece_or_move == 0:  # when selecting the piece to move
-        #     possible_actions = [
-        #         self._piece_is_dead(state, action)
-        #         if not isinstance(action, bool)
-        #         else action  # if it is a bool, keep it there
-        #         for action in possible_actions
-        #     ]
-        # # Case for making the move
-        # if piece_or_move == 1:
-        #     possible_actions = [
-        #         self._action_is_illegal(
-        #             state, board, action
-        #         )  # tells if move is legal it it is not a bool
-        #         if not isinstance(action, bool)
-        #         else action  # if it is a bool, keep it there
-        #         for action in possible_actions
-        #     ]
-        # return possible_actions
+        """
+        Returns a list of length the action space with values:
+            - True if the forward action is invalid from the current state.
+            - False otherwise.
+        """
+        if state is None:
+            state = self.state
+
+        if done is None:
+            done = self.done
+        possibles_actions = self.get_action_space()
+        if done:
+            return  [True for _ in range(self.action_space_dim)]
+
+        moves =  [self._action_to_move(action) for action in possibles_actions]
+        return [True if move not in state[0].legal_moves else False for move in moves]
 
     def step(
         self, action: Tuple[int], skip_mask_check: bool = False
@@ -107,7 +86,7 @@ class GFlowChessEnv(GFlowNetEnv):
         Returns
         -------
         self.state : list
-            The sequence after executing the action
+            The state after executing the action
 
         action : int
             Action index
@@ -116,31 +95,44 @@ class GFlowChessEnv(GFlowNetEnv):
             False, if the action is not allowed for the current state, e.g. stop at the
             root state
         """
-        pass
-        # # Generic pre-step checks
-        # do_step, self.state, action = self._pre_step(
-        #     action, skip_mask_check or self.skip_mask_check
-        # )
-        # if not do_step:
-        #     return self.state, action, False
-        # # If action is eos
-        # if action == self.eos:
-        #     self.done = True
-        #     self.n_actions += 1
-        #     return self.state, self.eos, True  # type: ignore
-        #
-        # # If action is not eos, then perform action. This is the main chunk !
-        # else:
-        #     move = self._convert_action_into_san(state=self.state, action=action)
-        #     try:
-        #         self.board.push_san(move)  # updates the board with the move
-        #         valid = True
-        #         self._update_state(action) # type: ignore
-        #     except Exception:
-        #         valid = False
-        #
-        #     if valid:
-        #         # the state was internally updated in self._update_state
-        #         self.n_actions += 1
-        #     return self.state, action, valid
 
+        # Generic pre-step checks
+        do_step, self.state, action = self._pre_step(
+            action, skip_mask_check or self.skip_mask_check
+        )
+        if not do_step:
+            return self.state, action, False
+        # If action is eos
+        if action == self.eos:
+            self.done = True
+            self.n_actions += 1
+            return self.state, self.eos, True  # type: ignore
+
+        # If action is not eos, then perform action. This is the main chunk !
+        else:
+            move = self._action_to_move(action) #type: ignore
+            valid = True if move in self.state[0].legal_moves else False # type: ignore
+            if valid:
+                # the state was internally updated in self._update_state
+                self.n_actions += 1
+                self.state[0].push(move) # type: ignore
+            return self.state, action, valid
+
+
+    def _action_to_move(self, action: Tuple[int, int]) -> chess.Move:
+        """
+        Transform an action into a chess.Move object. It treats the first
+        integer as the initial square and the second integer as the destination
+
+        Parameters
+        ----------
+        Action: Tuple[int, int],
+            Action for making a move.
+
+        Returns
+        -------
+        Returns a chess.Move object representing the action.
+        """
+        init_square = chess.SQUARES[action[0]]
+        final_square = chess.SQUARES[action[1]]
+        return chess.Move(from_square= init_square, to_square = final_square)

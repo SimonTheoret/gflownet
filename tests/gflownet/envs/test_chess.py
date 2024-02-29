@@ -2,7 +2,7 @@ import pytest
 
 from gflownet.envs.chess import GFlowChessEnv
 
-ACTION_SPACE_SIZE = 140
+ACTION_SPACE_SIZE = 4097 # 64*64+1 
 
 
 @pytest.fixture
@@ -23,7 +23,4 @@ def test_size_action_space():
 def test_size_invalid_actions_mask():
     chess_env = env()
     assert len(chess_env.get_mask_invalid_actions_forward()) == ACTION_SPACE_SIZE
-
-def test_convertion_into_san():
-    pass
 
