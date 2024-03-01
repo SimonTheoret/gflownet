@@ -30,6 +30,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
         """
         self.state = [Board(fen) if fen is not None else Board()]  # Board in a list
+        self.source = [Board(fen) if fen is not None else Board()]  # Source state
         self.eos = (-1, -1)  # End of sequence action
 
     def get_action_space(self) -> List:
@@ -41,10 +42,9 @@ class GFlowChessEnv(GFlowNetEnv):
         -------
         Returns the list containing all the possibles actions.
         """
-        lis = list(combinations([i for i in range(0,64)],2))
+        lis = list(combinations([i for i in range(0, 64)], 2))
         lis.append(self.eos)
         return lis
-
 
     def get_mask_invalid_actions_forward(
         self,
@@ -63,9 +63,9 @@ class GFlowChessEnv(GFlowNetEnv):
             done = self.done
         possibles_actions = self.get_action_space()
         if done:
-            return  [True for _ in range(self.action_space_dim)]
+            return [True for _ in range(self.action_space_dim)]
 
-        moves =  [self._action_to_move(action) for action in possibles_actions]
+        moves = [self._action_to_move(action) for action in possibles_actions]
         return [True if move not in state[0].legal_moves else False for move in moves]
 
     def step(
@@ -110,14 +110,13 @@ class GFlowChessEnv(GFlowNetEnv):
 
         # If action is not eos, then perform action. This is the main chunk !
         else:
-            move = self._action_to_move(action) #type: ignore
-            valid = True if move in self.state[0].legal_moves else False # type: ignore
+            move = self._action_to_move(action)  # type: ignore
+            valid = True if move in self.state[0].legal_moves else False  # type: ignore
             if valid:
                 # the state was internally updated in self._update_state
                 self.n_actions += 1
-                self.state[0].push(move) # type: ignore
+                self.state[0].push(move)  # type: ignore
             return self.state, action, valid
-
 
     def _action_to_move(self, action: Tuple[int, int]) -> chess.Move:
         """
@@ -135,4 +134,64 @@ class GFlowChessEnv(GFlowNetEnv):
         """
         init_square = chess.SQUARES[action[0]]
         final_square = chess.SQUARES[action[1]]
-        return chess.Move(from_square= init_square, to_square = final_square)
+        return chess.Move(from_square=init_square, to_square=final_square)
+
+    def _fen_to_list(self, board: Board) -> list[str]:
+        """
+        Returns the fen representation of a board as a list of characters. The
+        length of this list will always be 100.
+
+        Parameters
+        ----------
+        board: Board
+            The board which representation is used to make the list of
+            characters.
+
+        Returns
+        -------
+        The fen representation as a list of string with a padding of `A`s. This
+        list will always be of length 100. This representation of the board is
+        used in the state.
+        """
+        init = [*board.fen()]
+        while len(init) < 100:
+            init.append("A")  # Adds an arbitrary token at the end of the fen
+            # string. This is to make sure the state is always of lenght 100
+            # and is therefore a valid input for our model
+        return init
+
+    def _parse_fen_list_to_board(self, fen_list: List[str]) -> Board:
+        """
+        Parse a fen list into a board.
+
+        Parameters
+        ----------
+        fen_list: List[str]
+            list of characters, potentially containing padding. The padding is removed.
+
+        Returns
+        -------
+        The board, in the state given by the fen representation.
+        """
+        fen = self._parse_fen_list(fen_list)
+        return Board(fen)
+
+    def _parse_fen_list(self, fen_list: List[str]) -> str:
+        """
+        Parses a fen list into a string. It removes the padding.
+
+        Parameters
+        ----------
+        fen_list: List[str]
+            list of characters, potentially containing padding. The padding is removed.
+
+        Returns
+        -------
+        A string of the fen representation of the state, without the padding
+        """
+        idx = fen_list.index("A")  # finds the first padding element (`A`)
+        fen_list = fen_list[:idx]  # take until the first `A` (excludes the first `A`)
+        fen = "".join(
+            fen_list
+        )  # consumes the iterables and build it into a single string
+        return fen
