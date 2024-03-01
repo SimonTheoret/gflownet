@@ -18,6 +18,7 @@ class GFlowChessEnv(GFlowNetEnv):
     def __init__(
         self,
         fen: Optional[str] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        **kwargs,
     ):
         """
         Initialize the State space.
@@ -42,7 +43,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
         self.source = self.state  # Source state
 
-        super().__init__()
+        super().__init__(**kwargs)
 
     def get_action_space(self) -> List:
         """
