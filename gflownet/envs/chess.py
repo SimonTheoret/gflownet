@@ -1,6 +1,7 @@
 """Partial environment for chess"""
 
-from itertools import combinations
+import re
+from itertools import chain, combinations
 from typing import List, Optional, Tuple
 
 import chess
@@ -29,9 +30,17 @@ class GFlowChessEnv(GFlowNetEnv):
             'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
         """
-        self.state = [Board(fen) if fen is not None else Board()]  # Board in a list
-        self.source = [Board(fen) if fen is not None else Board()]  # Source state
+        self.board = Board(fen) if fen is not None else Board()  # Board in a list
+
         self.eos = (-1, -1)  # End of sequence action
+
+        self.fen_parser = FenParser()
+
+        self.state = self.fen_parser.parse(
+            self.board.fen()
+        )  # parses the board's fen into a list containing the positions on the board
+
+        self.source = self.state  # Source state
 
     def get_action_space(self) -> List:
         """
@@ -61,12 +70,14 @@ class GFlowChessEnv(GFlowNetEnv):
 
         if done is None:
             done = self.done
+
         possibles_actions = self.get_action_space()
+
         if done:
             return [True for _ in range(self.action_space_dim)]
 
         moves = [self._action_to_move(action) for action in possibles_actions]
-        return [True if move not in state[0].legal_moves else False for move in moves]
+        return [True if move not in self.board.legal_moves else False for move in moves]
 
     def step(
         self, action: Tuple[int], skip_mask_check: bool = False
@@ -102,20 +113,31 @@ class GFlowChessEnv(GFlowNetEnv):
         )
         if not do_step:
             return self.state, action, False
-        # If action is eos
-        if action == self.eos:
+
+        move = self._action_to_move(action)  # type: ignore
+
+        # If action is eos or the game is over
+        if action == self.eos or self.board.is_game_over():
             self.done = True
             self.n_actions += 1
             return self.state, self.eos, True  # type: ignore
 
-        # If action is not eos, then perform action. This is the main chunk !
+        # If action is not eos and game is not over, perform action. This is
+        # the main chunk !
         else:
-            move = self._action_to_move(action)  # type: ignore
-            valid = True if move in self.state[0].legal_moves else False  # type: ignore
+            valid = True if move in self.board.legal_moves else False  # type: ignore
             if valid:
                 # the state was internally updated in self._update_state
                 self.n_actions += 1
-                self.state[0].push(move)  # type: ignore
+                self.board.push(move)
+
+                self.state = self.fen_parser.parse(
+                    self.board.fen()
+                )  # update the state with the current fen
+
+                if self.board.gives_check(move):
+                    return self.state, self.eos, valid  # type: ignore
+
             return self.state, action, valid
 
     def _action_to_move(self, action: Tuple[int, int]) -> chess.Move:
@@ -136,62 +158,62 @@ class GFlowChessEnv(GFlowNetEnv):
         final_square = chess.SQUARES[action[1]]
         return chess.Move(from_square=init_square, to_square=final_square)
 
-    def _fen_to_list(self, board: Board) -> list[str]:
-        """
-        Returns the fen representation of a board as a list of characters. The
-        length of this list will always be 100.
+
+class FenParser:
+    def __init__(self):
+        self.tokenizer = {
+            "p": -1,
+            "r": -2,
+            "n": -3,
+            "b": -4,
+            "q": -5,
+            "k": -6,
+            "P": 1,
+            "R": 2,
+            "N": 3,
+            "B": 4,
+            "Q": 5,
+            "K": 6,
+            " ": 0,
+        }
+
+    def parse(self, fen_str: str) ->List[int] :
+        """Parse a the fen_str into list (vector) of integers representing the
+        board's positions.
 
         Parameters
         ----------
-        board: Board
-            The board which representation is used to make the list of
-            characters.
+        fen_str: str
+            The fen string parsed into a vector of integers. This is normally
+            obtained by calling board.fen()
 
-        Returns
+        Results
         -------
-        The fen representation as a list of string with a padding of `A`s. This
-        list will always be of length 100. This representation of the board is
-        used in the state.
+        Returns a list of integers, where each integer represents a piece or a
+        empty square.
         """
-        init = [*board.fen()]
-        while len(init) < 100:
-            init.append("A")  # Adds an arbitrary token at the end of the fen
-            # string. This is to make sure the state is always of lenght 100
-            # and is therefore a valid input for our model
-        return init
+        ranks = fen_str.split(" ")[0].split("/")
+        pieces_on_all_ranks = [self.parse_rank(rank) for rank in ranks]
+        flatten = list(chain(*pieces_on_all_ranks)) #creates a flat version of the board
+        return [self.tokenizer[i] for i in flatten] #returns the tokenized version of the board
 
-    def _parse_fen_list_to_board(self, fen_list: List[str]) -> Board:
-        """
-        Parse a fen list into a board.
+    def parse_rank(self, rank):
+        rank_re = re.compile("(\d|[kqbnrpKQBNRP])")  # type: ignore
+        piece_tokens = rank_re.findall(rank)
+        pieces = self.flatten(map(self.expand_or_noop, piece_tokens))
+        return pieces
 
-        Parameters
-        ----------
-        fen_list: List[str]
-            list of characters, potentially containing padding. The padding is removed.
+    def flatten(self, lst):
+        return list(chain(*lst))
 
-        Returns
-        -------
-        The board, in the state given by the fen representation.
-        """
-        fen = self._parse_fen_list(fen_list)
-        return Board(fen)
+    def expand_or_noop(self, piece_str):
+        piece_re = re.compile("([kqbnrpKQBNRP])")
+        retval = ""
+        if piece_re.match(piece_str):
+            retval = piece_str
+        else:
+            retval = self.expand(piece_str)
+        return retval
 
-    def _parse_fen_list(self, fen_list: List[str]) -> str:
-        """
-        Parses a fen list into a string. It removes the padding.
-
-        Parameters
-        ----------
-        fen_list: List[str]
-            list of characters, potentially containing padding. The padding is removed.
-
-        Returns
-        -------
-        A string of the fen representation of the state, without the padding
-        """
-        idx = fen_list.index("A")  # finds the first padding element (`A`)
-        fen_list = fen_list[:idx]  # take until the first `A` (excludes the first `A`)
-        fen = "".join(
-            fen_list
-        )  # consumes the iterables and build it into a single string
-        return fen
+    def expand(self, num_str):
+        return int(num_str) * " "
