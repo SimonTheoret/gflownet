@@ -1,7 +1,7 @@
 """Partial environment for chess"""
 
 import re
-from itertools import chain, combinations
+from itertools import chain, product
 from typing import List, Optional, Tuple
 
 import chess
@@ -51,7 +51,9 @@ class GFlowChessEnv(GFlowNetEnv):
         -------
         Returns the list containing all the possibles actions.
         """
-        lis = list(combinations([i for i in range(0, 64)], 2))
+        lis1 = [i for i in range(0,64)]
+        lis2 = [i for i in range(0,64)]
+        lis = list(product(lis1, lis2))
         lis.append(self.eos)
         return lis
 
