@@ -42,6 +42,8 @@ class GFlowChessEnv(GFlowNetEnv):
 
         self.source = self.state  # Source state
 
+        super().__init__()
+
     def get_action_space(self) -> List:
         """
         Returns all possible actions. An action is defined as a destination and
