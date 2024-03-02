@@ -134,14 +134,17 @@ class GFlowChessEnv(GFlowNetEnv):
             if valid:
                 # the state was internally updated in self._update_state
                 self.n_actions += 1
+
+                if self.board.gives_check(move):
+                    self.board.push(move)
+                    return self.state, self.eos, valid  # type: ignore
+
                 self.board.push(move)
 
                 self.state = self.fen_parser.parse(
                     self.board.fen()
                 )  # update the state with the current fen
 
-                if self.board.gives_check(move):
-                    return self.state, self.eos, valid  # type: ignore
 
             return self.state, action, valid
 
