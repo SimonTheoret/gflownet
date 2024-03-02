@@ -38,7 +38,7 @@ class GFlowChessEnv(GFlowNetEnv):
         self.fen_parser = FenParser()
 
         self.state = self.fen_parser.parse(
-            self.board.fen()
+            self.board.fen(), self
         )  # parses the board's fen into a list containing the positions on the board
 
         self.source = self.state  # Source state
@@ -54,8 +54,8 @@ class GFlowChessEnv(GFlowNetEnv):
         -------
         Returns the list containing all the possibles actions.
         """
-        lis1 = [i for i in range(0,64)]
-        lis2 = [i for i in range(0,64)]
+        lis1 = [i for i in range(0, 64)]
+        lis2 = [i for i in range(0, 64)]
         lis = list(product(lis1, lis2))
         lis.append(self.eos)
         return lis
@@ -142,9 +142,8 @@ class GFlowChessEnv(GFlowNetEnv):
                 self.board.push(move)
 
                 self.state = self.fen_parser.parse(
-                    self.board.fen()
+                    self.board.fen(), self
                 )  # update the state with the current fen
-
 
             return self.state, action, valid
 
@@ -185,7 +184,7 @@ class FenParser:
             " ": 0,
         }
 
-    def parse(self, fen_str: str) ->List[int] :
+    def parse(self, fen_str: str, env: GFlowNetEnv) -> List[int]:
         """Parse a the fen_str into list (vector) of integers representing the
         board's positions.
 
@@ -202,8 +201,12 @@ class FenParser:
         """
         ranks = fen_str.split(" ")[0].split("/")
         pieces_on_all_ranks = [self.parse_rank(rank) for rank in ranks]
-        flatten = list(chain(*pieces_on_all_ranks)) #creates a flat version of the board
-        return [self.tokenizer[i] for i in flatten] #returns the tokenized version of the board
+        flatten = list(
+            chain(*pieces_on_all_ranks)
+        )  # creates a flat version of the board
+        return [self.tokenizer[i] for i in flatten] + [
+            int(env.id)
+        ]  # returns the tokenized version of the board
 
     def parse_rank(self, rank):
         rank_re = re.compile("(\d|[kqbnrpKQBNRP])")  # type: ignore
