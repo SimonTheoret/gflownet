@@ -13,6 +13,12 @@ class Chess(Proxy):
         self.engine = engine.SimpleEngine.popen_uci(
             engine_path
         )  # the stockfish engine.
+        self.boards = {}  # list of GFlowChess environments. Populated with self.setup()
+
+    def setup(self, env=None):
+        """Overrides the default setup function from the base class."""
+        assert env is not None
+        self.boards[env.id] = env.board
 
     def __call__(self, states: TensorType["batch", 1]) -> TensorType["batch"]:  # type: ignore
         scores = [
