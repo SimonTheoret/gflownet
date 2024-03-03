@@ -147,6 +147,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
             return self.state, action, valid
 
+
     def _action_to_move(self, action: Tuple[int, int]) -> chess.Move:
         """
         Transform an action into a chess.Move object. It treats the first
@@ -164,6 +165,10 @@ class GFlowChessEnv(GFlowNetEnv):
         init_square = chess.SQUARES[action[0]]
         final_square = chess.SQUARES[action[1]]
         return chess.Move(from_square=init_square, to_square=final_square)
+
+    # TODO: implement state2readable
+    def state2readable(self, state):
+        pass
 
 
 class FenParser:
@@ -213,6 +218,11 @@ class FenParser:
         piece_tokens = rank_re.findall(rank)
         pieces = self.flatten(map(self.expand_or_noop, piece_tokens))
         return pieces
+
+    def pretty_print_board(self, fen_str: str):
+        ranks = fen_str.split(" ")[0].split("/")
+        pieces_on_all_ranks = [self.parse_rank(rank) for rank in ranks]
+        return pieces_on_all_ranks
 
     def flatten(self, lst):
         return list(chain(*lst))
