@@ -37,10 +37,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
         self.fen_parser = FenParser()
 
-        self.state = self.fen_parser.parse(
-            self.board.fen(), self
-        )  # parses the board's fen into a list containing the positions on the board
-
+        self.state = self.board
         self.source = self.state  # Source state
 
         super().__init__(**kwargs)
@@ -241,13 +238,6 @@ class GFlowChessEnv(GFlowNetEnv):
                 starting_piece_count.pop(piece_type)
 
         return starting_piece_count
-
-    def output_svg(self, board, output_folder, i):
-        svg_board = chess.svg.board(board)
-        # Save SVG representation of the board to a file
-        svg_file_path = os.path.join(output_folder, f"board_{i + 1}.svg")
-        with open(svg_file_path, "w") as svg_file:
-            svg_file.write(svg_board)
 
     def generate_pawn_moves(self, board, missing_pieces_opponents):
         previous_pawn_moves = []
