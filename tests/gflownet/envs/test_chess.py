@@ -1,6 +1,6 @@
 import pytest
 
-from gflownet.envs.chess import GFlowChessEnv
+from gflownet.envs.chess_class import GFlowChessEnv
 
 ACTION_SPACE_SIZE = 4097
 
