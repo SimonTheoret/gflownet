@@ -16,9 +16,9 @@ class GFlowChessEnv(GFlowNetEnv):
     """
 
     def __init__(
-            self,
-            fen: Optional[str] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-            **kwargs,
+        self,
+        fen: Optional[str] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        **kwargs,
     ):
         """
         Initialize the State space.
@@ -31,14 +31,11 @@ class GFlowChessEnv(GFlowNetEnv):
             'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
         """
-        self.board = Board(fen) if fen is not None else Board()  # Board in a list
+        self.state: Board = Board(fen) if fen is not None else Board()  # Board
 
         self.eos = (-1, -1)  # End of sequence action
 
         self.fen_parser = FenParser()
-
-        self.state = self.board
-        self.source = self.state  # Source state
 
         super().__init__(**kwargs)
 
@@ -58,9 +55,9 @@ class GFlowChessEnv(GFlowNetEnv):
         return lis
 
     def get_mask_invalid_actions_forward(
-            self,
-            state: Optional[List] = None,
-            done: Optional[bool] = None,
+        self,
+        state: Optional[List] = None,
+        done: Optional[bool] = None,
     ) -> List:
         """
         Returns a list of length the action space with values:
@@ -79,10 +76,10 @@ class GFlowChessEnv(GFlowNetEnv):
             return [True for _ in range(self.action_space_dim)]
 
         moves = [self._action_to_move(action) for action in possibles_actions]
-        return [True if move not in self.board.legal_moves else False for move in moves]
+        return [True if move not in self.state.legal_moves else False for move in moves]
 
     def step(
-            self, action: Tuple[int], skip_mask_check: bool = False
+        self, action: Tuple[int], skip_mask_check: bool = False
     ) -> Tuple[List[int], Tuple[int], bool]:
         """
         Executes step given an action.
@@ -119,7 +116,7 @@ class GFlowChessEnv(GFlowNetEnv):
         move = self._action_to_move(action)  # type: ignore
 
         # If action is eos or the game is over
-        if action == self.eos or self.board.is_game_over():
+        if action == self.eos or self.state.is_game_over():
             self.done = True
             self.n_actions += 1
             return self.state, self.eos, True  # type: ignore
@@ -127,20 +124,17 @@ class GFlowChessEnv(GFlowNetEnv):
         # If action is not eos and game is not over, perform action. This is
         # the main chunk !
         else:
-            valid = move in self.board.legal_moves  # type: ignore
+            valid = move in self.state.legal_moves  # type: ignore
             if valid:
                 # the state was internally updated in self._update_state
                 self.n_actions += 1
 
-                if self.board.gives_check(move):
-                    self.board.push(move)
+                if self.state.gives_check(move):
+                    self.state.push(move)
                     return self.state, self.eos, valid  # type: ignore
 
-                self.board.push(move)
+                self.state.push(move)
 
-                self.state = self.fen_parser.parse(
-                    self.board.fen(), self
-                )  # update the state with the current fen
 
             return self.state, action, valid
 
@@ -166,11 +160,20 @@ class GFlowChessEnv(GFlowNetEnv):
     def state2readable(self, state):
         pass
 
-    def get_parents(self,
-                    state: Optional[List] = None,
-                    done: Optional[bool] = None,
-                    action: Optional[Tuple] = None):
-        current_board = chess.Board("r1bqkbnr/ppp2ppp/2np4/4p3/4P3/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 1")
+    # TODO: implement state2policy
+    def state2policy():
+        pass
+
+
+    def get_parents(
+        self,
+        state: Optional[List] = None,
+        done: Optional[bool] = None,
+        action: Optional[Tuple] = None,
+    ):
+        current_board = chess.Board(
+            "r1bqkbnr/ppp2ppp/2np4/4p3/4P3/2N2N2/PPPP1PPP/R1BQKB1R w KQkq - 0 1"
+        )
 
         output_folder = "svg_boards"
 
@@ -186,7 +189,9 @@ class GFlowChessEnv(GFlowNetEnv):
             resulting_boards.append(board_copy.copy())
             # take into consideration all pieces that could have been eaten
             for piece in missing_pieces_opponents.keys():
-                board_copy.set_piece_at(move.from_square, chess.Piece.from_symbol(piece))
+                board_copy.set_piece_at(
+                    move.from_square, chess.Piece.from_symbol(piece)
+                )
                 resulting_boards.append(board_copy.copy())
                 board_copy.remove_piece_at(move.from_square)
         # generate pawn movements
@@ -196,7 +201,9 @@ class GFlowChessEnv(GFlowNetEnv):
             # check if pawn is moving diagonal (eating)
             if move.from_square % 8 != move.from_square % 8:
                 for piece in missing_pieces_opponents.keys():
-                    board_copy.set_piece_at(move.from_square, chess.Piece.from_symbol(piece))
+                    board_copy.set_piece_at(
+                        move.from_square, chess.Piece.from_symbol(piece)
+                    )
                     resulting_boards.append(board_copy.copy())
                     board_copy.remove_piece_at(move.from_square)
             else:
@@ -207,7 +214,10 @@ class GFlowChessEnv(GFlowNetEnv):
 
         for move in board.legal_moves:
             # Check if the move results in a capture
-            if not board.is_capture(move) and board.piece_at(move.from_square).piece_type != chess.PAWN:
+            if (
+                not board.is_capture(move)
+                and board.piece_at(move.from_square).piece_type != chess.PAWN
+            ):
                 non_capture_moves.append(move)
 
         return non_capture_moves
@@ -218,7 +228,9 @@ class GFlowChessEnv(GFlowNetEnv):
         starting_piece_count = {"p": 8, "n": 2, "b": 2, "r": 2, "q": 1, "k": 1}
         # white piece are in capital
         if opponent_color:
-            starting_piece_count = {key.upper(): value for key, value in starting_piece_count.items()}
+            starting_piece_count = {
+                key.upper(): value for key, value in starting_piece_count.items()
+            }
         # Create a set to store all opponent pieces currently on the board
         opponent_pieces_on_board = {}
 
@@ -245,23 +257,35 @@ class GFlowChessEnv(GFlowNetEnv):
         # Iterate over all squares on the board
         for square in chess.SQUARES:
             piece = board.piece_at(square)
-            if piece is not None and piece.piece_type == chess.PAWN and piece.color == board.turn:
+            if (
+                piece is not None
+                and piece.piece_type == chess.PAWN
+                and piece.color == board.turn
+            ):
                 # Get possible previous squares for the pawn
                 previous_squares = []
                 if piece.color == chess.WHITE:
-                    if square >= 16 and board.piece_at(
-                            square - 8) is None:  # If pawn has moved at least one square forward
+                    if (
+                        square >= 16 and board.piece_at(square - 8) is None
+                    ):  # If pawn has moved at least one square forward
                         previous_squares.append(square - 8)  # Move one square back
-                    if 32 >= square >= 25 and board.piece_at(square - 8) is None and board.piece_at(
-                            square - 16) is None:
+                    if (
+                        32 >= square >= 25
+                        and board.piece_at(square - 8) is None
+                        and board.piece_at(square - 16) is None
+                    ):
                         # If pawn is two squares ahead of initial position
                         previous_squares.append(square - 16)  # Move two squares back
                 elif piece.color == chess.BLACK:
-                    if square < 48 and board.piece_at(
-                            square + 8) is None:  # If pawn has moved at least one square forward
+                    if (
+                        square < 48 and board.piece_at(square + 8) is None
+                    ):  # If pawn has moved at least one square forward
                         previous_squares.append(square + 8)  # Move one square back
-                    if 40 >= square >= 33 and board.piece_at(square + 8) is None and board.piece_at(
-                            square + 16) is None:
+                    if (
+                        40 >= square >= 33
+                        and board.piece_at(square + 8) is None
+                        and board.piece_at(square + 16) is None
+                    ):
                         # If pawn is two squares ahead of initial position
                         previous_squares.append(square + 16)  # Move two squares back
 
@@ -273,14 +297,30 @@ class GFlowChessEnv(GFlowNetEnv):
                 if missing_pieces_opponents:
                     # checks if clear behind and if not in second row
                     if piece.color == chess.WHITE:
-                        if square % 8 != 0 and square - 7 >= 8 and board.piece_at(square - 7) is None:
+                        if (
+                            square % 8 != 0
+                            and square - 7 >= 8
+                            and board.piece_at(square - 7) is None
+                        ):
                             previous_pawn_moves.append(chess.Move(square, square - 7))
-                        if square % 8 != 7 and square - 9 >= 8 and board.piece_at(square - 9) is None:
+                        if (
+                            square % 8 != 7
+                            and square - 9 >= 8
+                            and board.piece_at(square - 9) is None
+                        ):
                             previous_pawn_moves.append(chess.Move(square, square - 9))
                     elif piece.color == chess.BLACK:
-                        if square % 8 != 7 and square + 7 <= 55 and board.piece_at(square + 7) is None:
+                        if (
+                            square % 8 != 7
+                            and square + 7 <= 55
+                            and board.piece_at(square + 7) is None
+                        ):
                             previous_pawn_moves.append(chess.Move(square, square + 7))
-                        if square % 8 != 0 and square + 9 <= 55 and board.piece_at(square + 9) is None:
+                        if (
+                            square % 8 != 0
+                            and square + 9 <= 55
+                            and board.piece_at(square + 9) is None
+                        ):
                             previous_pawn_moves.append(chess.Move(square, square + 9))
 
         return previous_pawn_moves
