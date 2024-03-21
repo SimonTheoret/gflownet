@@ -3,7 +3,7 @@
   inputs = { nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable"; };
   outputs = { self, nixpkgs }:
     let
-      pyVersion = 311;
+      pyVersion = 310;
       overlays = [
         (final: prev: { # Makes it easier to change python version, and its related packages.
           python = prev."python${toString pyVersion}Full";
@@ -47,10 +47,12 @@
             # pythonPackages.pytorch-bin
             pythonPackages.virtualenv
             nodePackages_latest.pyright
+            stockfish
           ];
 
           shellHook = ''
             export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib"
+            STOCKFISH="${pkgs.stockfish}"
           '';
         };
       });
