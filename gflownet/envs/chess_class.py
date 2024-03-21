@@ -4,6 +4,7 @@ import re
 from itertools import chain, product
 from typing import List, Optional, Tuple
 
+from torchtyping import TensorType
 import chess
 import torch
 from chess import Board
