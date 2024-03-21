@@ -52,7 +52,8 @@
 
           shellHook = ''
             export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib"
-            STOCKFISH="${pkgs.stockfish}"
+            export STOCKFISH="${pkgs.stockfish}/bin/stockfish"
+            echo "$STOCKFISH"
           '';
         };
       });

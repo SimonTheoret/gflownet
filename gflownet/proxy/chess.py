@@ -1,5 +1,5 @@
 import torch
-from chess import Board, engine
+from chess import engine
 from torchtyping import TensorType
 
 from gflownet.proxy.base import Proxy
