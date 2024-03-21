@@ -52,6 +52,8 @@
 
           shellHook = ''
             export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib}/lib"
+            export HYDRA_FULL_ERROR=1
+            echo "Hydra full error"
             export STOCKFISH="${pkgs.stockfish}/bin/stockfish"
             echo "$STOCKFISH"
           '';
