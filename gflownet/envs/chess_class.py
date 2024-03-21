@@ -330,19 +330,19 @@ class GFlowChessEnv(GFlowNetEnv):
 class FenParser:
     def __init__(self):
         self.tokenizer = {
-            "p": 1,
-            "r": 2,
-            "n": 3,
-            "b": 4,
-            "q": 5,
-            "k": 6,
-            "P": 7,
-            "R": 8,
-            "N": 9,
-            "B": 10,
-            "Q": 11,
-            "K": 12,
-            " ": 0,
+            "p": 1.0,
+            "r": 2.0,
+            "n": 3.0,
+            "b": 4.0,
+            "q": 5.0,
+            "k": 6.0,
+            "P": 7.0,
+            "R": 8.0,
+            "N": 9.0,
+            "B": 10.0,
+            "Q": 11.0,
+            "K": 12.0,
+            " ": 0.0,
         }
 
     def parse(self, fen_str: str, env: GFlowNetEnv) -> List[int]:
