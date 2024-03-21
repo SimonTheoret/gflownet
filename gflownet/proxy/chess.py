@@ -18,7 +18,7 @@ class Chess(Proxy):
     def setup(self, env=None):
         """Overrides the default setup function from the base class."""
         assert env is not None
-        self.boards[int(env.id)] = env.board  # ids are string
+        self.boards[id(env)] = env.state  # ids are string
 
     def __call__(self, states: TensorType["batch", 65]) -> TensorType["batch"]:  # type: ignore
         scores = [

@@ -1,0 +1,10 @@
+defaults:
+  - base
+
+_target_: gflownet.envs.chess_class.GFlowChessEnv
+
+id: chess
+buffer:
+  data_path: null
+  train: null
+  test: null
