@@ -46,6 +46,7 @@
             # pythonPackages.numpy
             # pythonPackages.pytorch-bin
             pythonPackages.virtualenv
+            nodePackages_latest.pyright
           ];
 
           shellHook = ''
