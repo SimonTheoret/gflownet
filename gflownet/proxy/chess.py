@@ -1,5 +1,6 @@
 from chess.engine import SimpleEngine
 import torch
+from chess import Board, engine
 from torch import Tensor
 from torchtyping import TensorType
 
