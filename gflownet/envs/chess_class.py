@@ -165,10 +165,36 @@ class GFlowChessEnv(GFlowNetEnv):
     # DONE: implement state2policy
 
     def state2policy(self, state=Board()) -> torch.Tensor:
-        fen_parser = FenParser()
-        return fen_parser.tokenize_chess_board(board=state, env=self)
+        return self.fen_parser.tokenize_chess_board(board=state, env=self)
 
-    def get_parents(
+    def states2policy(self, states) -> torch.Tensor:
+        parsed_board_list = []
+        for state in states:
+            state = parsed_board_list.append(self.state2policy(state))
+        stacked = torch.stack(parsed_board_list)
+        return stacked
+
+    # TODO: implement state2proxy
+    def state2proxy(
+        self, state: List | TensorType["state_dim"] = None
+    ) -> TensorType["state_proxy_dim"]:
+        if torch.is_tensor(state):
+            print("what the hell state is a tensor !!")
+        else:
+            return state
+
+    # TODO: implement states2proxy
+    def states2policy(
+        self, states: List | TensorType["batch", "state_dim"]
+    ) -> TensorType["batch", "policy_input_dim"]:
+        if torch.is_tensor(states):
+            print("what the hell state is a tensor!!")
+        else:
+            return states
+
+
+    # TODO: remove 1 's', if necessary
+    def get_parentss(
         self,
         state: Optional[List] = None,
         done: Optional[bool] = None,
@@ -406,6 +432,6 @@ class FenParser:
         - torch.Tensor: A PyTorch tensor representing the tokenized board.
         """
         fen_str = board.fen()
-        parser = FenParser()
+        parser = env.fen_parser
         tokenized_board = parser.parse(fen_str, env)
         return torch.tensor(tokenized_board)

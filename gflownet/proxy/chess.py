@@ -20,7 +20,7 @@ class Chess(Proxy):
     def __call__(self, states: TensorType["batch", 65]) -> Tensor:
         with SimpleEngine.popen_uci(self.engine_path) as engine:
             scores = [
-                engine.analyse(states[i, -1], engine.Limit(time=0.5))
+                engine.analyse(states[i], engine.Limit(time=0.5))
                 for i, _ in enumerate(states)
             ]
         return torch.tensor(scores)
