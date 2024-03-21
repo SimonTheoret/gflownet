@@ -238,7 +238,7 @@ class Tetris(GFlowNetEnv):
         if done is None:
             done = self.done
         if done:
-            return [True for _ in range(self.policypolicy_output_dim)]
+            return [True for _ in range(self.policy_output_dim)]
         mask = [False for _ in range(self.policy_output_dim)]
         for idx, action in enumerate(self.action_space[:-1]):
             _, valid = self._drop_piece_on_board(action, state)
