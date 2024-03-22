@@ -17,7 +17,7 @@ class Chess(Proxy):
         assert env is not None
         self.boards[id(env)] = env.state
 
-    def __call__(self, states: TensorType["batch", 65]) -> Tensor:
+    def __call__(self, states: TensorType["batch", 64]) -> Tensor:
         with SimpleEngine.popen_uci(self.engine_path) as eng:
             scores = []
             for state in states:
