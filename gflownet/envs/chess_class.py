@@ -84,7 +84,7 @@ class GFlowChessEnv(GFlowNetEnv):
             return [True for _ in range(self.action_space_dim)]
 
         moves = [self._action_to_move(action) for action in possibles_actions[:-1]]
-        return [True if move not in self.state.legal_moves else False for move in moves] + [True]
+        return [True if move not in self.state.legal_moves else False for move in moves] + [False]
 
     def step(
             self, action: Tuple[int], skip_mask_check: bool = False
@@ -129,13 +129,14 @@ class GFlowChessEnv(GFlowNetEnv):
             self.n_actions += 1
             return self.state, self.eos, True  # type: ignore
 
-        # If action is not eos and game is not over, perform action. This is
-        # the main chunk !
+        # Stop after 5 moves
         if self.n_actions >= 5:
             self.done = True
             self.n_actions += 1
-            return self.state, self.eos, True
+            return self.state, action, True
 
+        # If action is not eos and game is not over, perform action. This is
+        # the main chunk !
         else:
             valid = move in self.state.legal_moves  # type: ignore
             if valid:
