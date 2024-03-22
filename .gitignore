@@ -19,3 +19,4 @@ pyvenv.cfg
 .envrc
 .direnv
 .venv
+logs
