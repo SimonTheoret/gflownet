@@ -43,6 +43,8 @@ class GFlowChessEnv(GFlowNetEnv):
 
         self.source = self.state
 
+        self.n_actions = 0
+
         super().__init__(**kwargs)
 
     def get_action_space(self) -> List:
