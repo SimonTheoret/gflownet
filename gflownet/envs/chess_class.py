@@ -83,8 +83,8 @@ class GFlowChessEnv(GFlowNetEnv):
         if done:
             return [True for _ in range(self.action_space_dim)]
 
-        moves = [self._action_to_move(action) for action in possibles_actions]
-        return [True if move not in self.state.legal_moves else False for move in moves]
+        moves = [self._action_to_move(action) for action in possibles_actions[:-1]]
+        return [True if move not in self.state.legal_moves else False for move in moves] + [True]
 
     def step(
             self, action: Tuple[int], skip_mask_check: bool = False
