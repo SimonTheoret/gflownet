@@ -129,6 +129,9 @@ class GFlowChessEnv(GFlowNetEnv):
 
         # If action is not eos and game is not over, perform action. This is
         # the main chunk !
+        if self.n_action >= 5:
+            return self.state, self.eos, False
+
         else:
             valid = move in self.state.legal_moves  # type: ignore
             if valid:
