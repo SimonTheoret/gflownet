@@ -23,6 +23,5 @@ class Chess(Proxy):
             for state in states:
                 centipawn=eng.analyse(state, engine.Limit(time=0.5), info=engine.INFO_SCORE)["score"].relative.score()
                 scores.append(1 / (1 + 10 ** (centipawn/4)))
-        print(torch.tensor(scores))
         return torch.tensor(scores)
 
