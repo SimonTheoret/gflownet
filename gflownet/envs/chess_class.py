@@ -185,7 +185,7 @@ class GFlowChessEnv(GFlowNetEnv):
             return state
 
     # TODO: implement states2proxy
-    def states2policy(
+    def states2proxy(
         self, states: List | TensorType["batch", "state_dim"]
     ) -> TensorType["batch", "policy_input_dim"]:
         if torch.is_tensor(states):
