@@ -195,7 +195,6 @@ class GFlowChessEnv(GFlowNetEnv):
         else:
             return states
 
-    # TODO: remove 1 's', if necessary
     def get_parents(
             self,
             state: Optional[List] = None,
@@ -215,14 +214,14 @@ class GFlowChessEnv(GFlowNetEnv):
             board_copy = current_board.copy()
             board_copy.push(move)
             resulting_boards.append(board_copy.copy())
-            resulting_moves.append(move)
+            resulting_moves.append((move.from_square,move.to_square))
             # take into consideration all pieces that could have been eaten
             for piece in missing_pieces_opponents.keys():
                 board_copy.set_piece_at(
                     move.from_square, chess.Piece.from_symbol(piece)
                 )
                 resulting_boards.append(board_copy.copy())
-                resulting_moves.append(move)
+                resulting_moves.append((move.from_square,move.to_square))
                 board_copy.remove_piece_at(move.from_square)
         # generate pawn movements
         for move in pawn_moves:
@@ -235,11 +234,11 @@ class GFlowChessEnv(GFlowNetEnv):
                         move.from_square, chess.Piece.from_symbol(piece)
                     )
                     resulting_boards.append(board_copy.copy())
-                    resulting_moves.append(move)
+                    resulting_moves.append((move.from_square,move.to_square))
                     board_copy.remove_piece_at(move.from_square)
             else:
                 resulting_boards.append(board_copy.copy())
-                resulting_moves.append(move)
+                resulting_moves.append((move.from_square,move.to_square))
         return resulting_boards,resulting_moves
 
     def legal_moves_without_capture_and_pawn_moves(self, board):
