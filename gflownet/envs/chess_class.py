@@ -376,7 +376,7 @@ class FenParser:
             " ": 0.0,
         }
 
-    def parse(self, fen_str: str, env: GFlowNetEnv) -> List[int]:
+    def parse(self, fen_str: str, env: GFlowNetEnv) -> List[float]:
         """Parse a the fen_str into list (vector) of integers representing the
         board's positions.
 
@@ -396,9 +396,8 @@ class FenParser:
         flatten = list(
             chain(*pieces_on_all_ranks)
         )  # creates a flat version of the board
-        return [self.tokenizer[i] for i in flatten] + [
-            int(id(env))
-        ]  # returns the tokenized version of the board
+        return [self.tokenizer[i] for i in flatten]
+          # returns the tokenized version of the board
 
     def parse_rank(self, rank):
         rank_re = re.compile(r"(\d|[kqbnrpKQBNRP])")  # type: ignore
