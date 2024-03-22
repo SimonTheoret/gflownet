@@ -19,8 +19,10 @@ class Chess(Proxy):
 
     def __call__(self, states: TensorType["batch", 65]) -> Tensor:
         with SimpleEngine.popen_uci(self.engine_path) as eng:
-            scores = [
-                eng.analyse(states[i], engine.Limit(time=0.5))
-                for i, _ in enumerate(states)
-            ]
+            scores = []
+            for state in states:
+                centipawn=eng.analyse(state, engine.Limit(time=0.5), info=engine.INFO_SCORE)["score"].relative.score()
+                scores.append(1 / (1 + 10 ** (centipawn/4)))
+        print(torch.tensor(scores))
         return torch.tensor(scores)
+

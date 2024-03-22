@@ -8,6 +8,8 @@ from torchtyping import TensorType
 import chess
 import torch
 from chess import Board
+from torch import Tensor
+from torchtyping import TensorType
 
 from gflownet.envs.base import GFlowNetEnv
 
@@ -18,9 +20,9 @@ class GFlowChessEnv(GFlowNetEnv):
     """
 
     def __init__(
-        self,
-        fen: Optional[str] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-        **kwargs,
+            self,
+            fen: Optional[str] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+            **kwargs,
     ):
         """
         Initialize the State space.
@@ -59,9 +61,9 @@ class GFlowChessEnv(GFlowNetEnv):
         return lis
 
     def get_mask_invalid_actions_forward(
-        self,
-        state: Optional[List] = None,
-        done: Optional[bool] = None,
+            self,
+            state=Board(),
+            done: Optional[bool] = None,
     ) -> List:
         """
         Returns a list of length the action space with values:
@@ -83,7 +85,7 @@ class GFlowChessEnv(GFlowNetEnv):
         return [True if move not in self.state.legal_moves else False for move in moves]
 
     def step(
-        self, action: Tuple[int], skip_mask_check: bool = False
+            self, action: Tuple[int], skip_mask_check: bool = False
     ) -> Tuple[List[int], Tuple[int], bool]:
         """
         Executes step given an action.
@@ -177,7 +179,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
     # TODO: implement state2proxy
     def state2proxy(
-        self, state: List | TensorType["state_dim"] = None
+            self, state: List | TensorType["state_dim"] = None
     ) -> TensorType["state_proxy_dim"]:
         if torch.is_tensor(state):
             print("what the hell state is a tensor !!")
@@ -186,41 +188,41 @@ class GFlowChessEnv(GFlowNetEnv):
 
     # TODO: implement states2proxy
     def states2proxy(
-        self, states: List | TensorType["batch", "state_dim"]
+            self, states: List | TensorType["batch", "state_dim"]
     ) -> TensorType["batch", "policy_input_dim"]:
         if torch.is_tensor(states):
             print("what the hell state is a tensor!!")
         else:
             return states
 
-
     # TODO: remove 1 's', if necessary
-    def get_parentss(
-        self,
-        state: Optional[List] = None,
-        done: Optional[bool] = None,
-        action: Optional[Tuple] = None,
-    ):
+    def get_parents(
+            self,
+            state: Optional[List] = None,
+            done: Optional[bool] = None,
+            action: Optional[Tuple] = None,
+    ) -> tuple[List, List]:
         current_board = self.state
-
-        output_folder = "svg_boards"
 
         # remove all move that could lead to a capture and pawn movements
         non_pawn_moves = self.legal_moves_without_capture_and_pawn_moves(current_board)
         missing_pieces_opponents = self.get_missing_pieces_by_type(current_board)
         pawn_moves = self.generate_pawn_moves(current_board, missing_pieces_opponents)
         resulting_boards = []
+        resulting_moves = []
         # generate board from movements
         for move in non_pawn_moves:
             board_copy = current_board.copy()
             board_copy.push(move)
             resulting_boards.append(board_copy.copy())
+            resulting_moves.append(move)
             # take into consideration all pieces that could have been eaten
             for piece in missing_pieces_opponents.keys():
                 board_copy.set_piece_at(
                     move.from_square, chess.Piece.from_symbol(piece)
                 )
                 resulting_boards.append(board_copy.copy())
+                resulting_moves.append(move)
                 board_copy.remove_piece_at(move.from_square)
         # generate pawn movements
         for move in pawn_moves:
@@ -233,9 +235,12 @@ class GFlowChessEnv(GFlowNetEnv):
                         move.from_square, chess.Piece.from_symbol(piece)
                     )
                     resulting_boards.append(board_copy.copy())
+                    resulting_moves.append(move)
                     board_copy.remove_piece_at(move.from_square)
             else:
                 resulting_boards.append(board_copy.copy())
+                resulting_moves.append(move)
+        return resulting_boards,resulting_moves
 
     def legal_moves_without_capture_and_pawn_moves(self, board):
         non_capture_moves = []
@@ -243,8 +248,8 @@ class GFlowChessEnv(GFlowNetEnv):
         for move in board.legal_moves:
             # Check if the move results in a capture
             if (
-                not board.is_capture(move)
-                and board.piece_at(move.from_square).piece_type != chess.PAWN
+                    not board.is_capture(move)
+                    and board.piece_at(move.from_square).piece_type != chess.PAWN
             ):
                 non_capture_moves.append(move)
 
@@ -286,33 +291,33 @@ class GFlowChessEnv(GFlowNetEnv):
         for square in chess.SQUARES:
             piece = board.piece_at(square)
             if (
-                piece is not None
-                and piece.piece_type == chess.PAWN
-                and piece.color == board.turn
+                    piece is not None
+                    and piece.piece_type == chess.PAWN
+                    and piece.color == board.turn
             ):
                 # Get possible previous squares for the pawn
                 previous_squares = []
                 if piece.color == chess.WHITE:
                     if (
-                        square >= 16 and board.piece_at(square - 8) is None
+                            square >= 16 and board.piece_at(square - 8) is None
                     ):  # If pawn has moved at least one square forward
                         previous_squares.append(square - 8)  # Move one square back
                     if (
-                        32 >= square >= 25
-                        and board.piece_at(square - 8) is None
-                        and board.piece_at(square - 16) is None
+                            32 >= square >= 25
+                            and board.piece_at(square - 8) is None
+                            and board.piece_at(square - 16) is None
                     ):
                         # If pawn is two squares ahead of initial position
                         previous_squares.append(square - 16)  # Move two squares back
                 elif piece.color == chess.BLACK:
                     if (
-                        square < 48 and board.piece_at(square + 8) is None
+                            square < 48 and board.piece_at(square + 8) is None
                     ):  # If pawn has moved at least one square forward
                         previous_squares.append(square + 8)  # Move one square back
                     if (
-                        40 >= square >= 33
-                        and board.piece_at(square + 8) is None
-                        and board.piece_at(square + 16) is None
+                            40 >= square >= 33
+                            and board.piece_at(square + 8) is None
+                            and board.piece_at(square + 16) is None
                     ):
                         # If pawn is two squares ahead of initial position
                         previous_squares.append(square + 16)  # Move two squares back
@@ -326,28 +331,28 @@ class GFlowChessEnv(GFlowNetEnv):
                     # checks if clear behind and if not in second row
                     if piece.color == chess.WHITE:
                         if (
-                            square % 8 != 0
-                            and square - 7 >= 8
-                            and board.piece_at(square - 7) is None
+                                square % 8 != 0
+                                and square - 7 >= 8
+                                and board.piece_at(square - 7) is None
                         ):
                             previous_pawn_moves.append(chess.Move(square, square - 7))
                         if (
-                            square % 8 != 7
-                            and square - 9 >= 8
-                            and board.piece_at(square - 9) is None
+                                square % 8 != 7
+                                and square - 9 >= 8
+                                and board.piece_at(square - 9) is None
                         ):
                             previous_pawn_moves.append(chess.Move(square, square - 9))
                     elif piece.color == chess.BLACK:
                         if (
-                            square % 8 != 7
-                            and square + 7 <= 55
-                            and board.piece_at(square + 7) is None
+                                square % 8 != 7
+                                and square + 7 <= 55
+                                and board.piece_at(square + 7) is None
                         ):
                             previous_pawn_moves.append(chess.Move(square, square + 7))
                         if (
-                            square % 8 != 0
-                            and square + 9 <= 55
-                            and board.piece_at(square + 9) is None
+                                square % 8 != 0
+                                and square + 9 <= 55
+                                and board.piece_at(square + 9) is None
                         ):
                             previous_pawn_moves.append(chess.Move(square, square + 9))
 
