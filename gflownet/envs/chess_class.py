@@ -210,7 +210,14 @@ class GFlowChessEnv(GFlowNetEnv):
             action: Optional[Tuple] = None,
     ) -> tuple[List, List]:
         current_board = self.state
-
+        if state is None:
+            state = self.state
+        if done is None:
+            done = self.done
+        if done:
+            return [state], [self.eos]
+        if state == self.source:
+            return [], []
         # remove all move that could lead to a capture and pawn movements
         non_pawn_moves = self.legal_moves_without_capture_and_pawn_moves(current_board)
         missing_pieces_opponents = self.get_missing_pieces_by_type(current_board)
