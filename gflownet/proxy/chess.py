@@ -21,7 +21,10 @@ class Chess(Proxy):
         with SimpleEngine.popen_uci(self.engine_path) as eng:
             scores = []
             for state in states:
-                centipawn=eng.analyse(state, engine.Limit(time=0.5), info=engine.INFO_SCORE)["score"].relative.score()
-                scores.append(1 / (1 + 10 ** (centipawn/4)))
+                centipawn=eng.analyse(state, engine.Limit(time=0.1), info=engine.INFO_SCORE)["score"].relative.score()
+                if centipawn is not None:
+                    scores.append(1 / (1 + 10 ** (centipawn/4)))
+                else:
+                    scores.append(0)
         return torch.tensor(scores)
 
