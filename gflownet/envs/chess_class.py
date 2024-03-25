@@ -284,7 +284,6 @@ class GFlowChessEnv(GFlowNetEnv):
             else:
                 resulting_boards.append(board_copy.copy())
                 resulting_moves.append((move.from_square, move.to_square))
-        print(resulting_boards[0], resulting_moves[0])
         return resulting_boards, resulting_moves
 
     def legal_moves_without_capture_and_pawn_moves(self, board):
