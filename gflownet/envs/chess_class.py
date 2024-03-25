@@ -13,6 +13,7 @@ from torchtyping import TensorType
 
 from gflownet.envs.base import GFlowNetEnv
 
+chess.Board.__len__ = lambda x: 1 
 
 class GFlowChessEnv(GFlowNetEnv):
     """
@@ -68,7 +69,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
     def get_mask_invalid_actions_forward(
         self,
-        state = None,
+        state=None,
         done: Optional[bool] = None,
     ) -> List:
         """
@@ -219,25 +220,29 @@ class GFlowChessEnv(GFlowNetEnv):
         else:
             return states
 
-    # def get_parents(self, state = None, done = None, action=None):
-    #     state = self._get_state(state)
-    #     done = self._get_done(done)
-    #     if done:
-    #         return [state], [self.eos]
-    #     if self.equal(state, self.source):
-    #         return [], []
-    #     copy_state = state.copy()
-    #     action = copy_state.pop()
-    #     action = (int(action.from_square), int(action.to_square))
-    #     return [copy_state], [action]
-    
-    def get_parents(
+    def get_parents(self, state = None, done = None, action=None):
+        state = self._get_state(state)
+        done = self._get_done(done)
+        if done:
+            return [state], [self.eos]
+        if self.equal(state, self.source):
+            return [], []
+        copy_state = state.copy()
+        action = copy_state.pop()
+        action = (int(action.from_square), int(action.to_square))
+        return [copy_state], [action]
+
+    def get_parentss(
         self,
         state: Optional[List] = None,
         done: Optional[bool] = None,
         action: Optional[Tuple] = None,
     ) -> tuple[List, List]:
         current_board: Board = self.state
+        if current_board.turn == chess.WHITE:
+            current_board.turn = chess.BLACK
+        else:
+            current_board.turn = chess.WHITE
         if state is None:
             state = self.state
         if done is None:
@@ -300,7 +305,7 @@ class GFlowChessEnv(GFlowNetEnv):
         return non_capture_moves
 
     def get_missing_pieces_by_type(self, board):
-        opponent_color = not board.turn
+        opponent_color = board.turn
         # piece normally on a chess board at the beginning
         starting_piece_count = {"p": 8, "n": 2, "b": 2, "r": 2, "q": 1, "k": 1}
         # white piece are in capital
@@ -420,7 +425,7 @@ class FenParser:
             "Q": 11.0,
             "K": 12.0,
             " ": 0.0,
-        } #TODO: Change this encoding for a one-hot encoding
+        }  # TODO: Change this encoding for a one-hot encoding
 
     def parse(self, fen_str: str) -> List[float]:
         """Parse a the fen_str into list (vector) of integers representing the
