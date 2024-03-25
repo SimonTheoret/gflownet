@@ -14,3 +14,4 @@
     - Commencer avec uniform reward
     - garder le score proche de 0
 
+logger.do.online=True
