@@ -41,7 +41,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
         self.fen_parser = FenParser()
 
-        self.source = self.state
+        self.source: Board = Board(fen) if fen is not None else Board()  
 
         self.n_actions = 0
 
