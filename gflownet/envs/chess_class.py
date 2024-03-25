@@ -20,9 +20,9 @@ class GFlowChessEnv(GFlowNetEnv):
     """
 
     def __init__(
-            self,
-            fen: Optional[str] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-            **kwargs,
+        self,
+        fen: Optional[str] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        **kwargs,
     ):
         """
         Initialize the State space.
@@ -41,9 +41,13 @@ class GFlowChessEnv(GFlowNetEnv):
 
         self.fen_parser = FenParser()
 
-        self.source: Board = Board(fen) if fen is not None else Board()  
+        self.source: Board = Board(fen) if fen is not None else Board()
 
+        # initial count of actions
         self.n_actions = 0
+
+        # How many actions can we do un a single sequence (maximum length of the sequence)
+        self.max_n_actions = 5
 
         super().__init__(**kwargs)
 
@@ -63,9 +67,9 @@ class GFlowChessEnv(GFlowNetEnv):
         return lis
 
     def get_mask_invalid_actions_forward(
-            self,
-            state=Board(),
-            done: Optional[bool] = None,
+        self,
+        state=Board(),
+        done: Optional[bool] = None,
     ) -> List:
         """
         Returns a list of length the action space with values:
@@ -73,21 +77,41 @@ class GFlowChessEnv(GFlowNetEnv):
             - False otherwise.
         """
         if state is None:
-            state = self.state
+            state: Board = self.state
 
         if done is None:
-            done = self.done
+            done: bool = self.done
 
-        possibles_actions = self.get_action_space()
-
+        # Done case. Nothing to do
         if done:
             return [True for _ in range(self.action_space_dim)]
 
-        moves = [self._action_to_move(action) for action in possibles_actions[:-1]]
-        return [True if move not in self.state.legal_moves else False for move in moves] + [False]
+        possibles_actions = self.get_action_space()
+
+        # if sequence is completed or the game is over
+        if isinstance(state, Board):
+            if state.is_game_over() or self.n_actions >= self.max_n_actions:
+                return [
+                    True if action != self.eos else False
+                    for action in possibles_actions
+                ]
+
+            # if sequence is not completed and the done is false:
+            moves = [
+                self._action_to_move(action) if action != self.eos else action
+                for action in possibles_actions
+            ]
+            return [
+                True if move == self.eos or move not in state.legal_moves else False
+                for move in moves
+            ]
+        else:
+            print("The state is not a board!!!")
+            print("state is type: ")
+            print(type(state))
 
     def step(
-            self, action: Tuple[int], skip_mask_check: bool = False
+        self, action: Tuple[int], skip_mask_check: bool = False
     ) -> Tuple[List[int], Tuple[int], bool]:
         """
         Executes step given an action.
@@ -115,43 +139,52 @@ class GFlowChessEnv(GFlowNetEnv):
         """
 
         # Generic pre-step checks
+        print("starting a step")
         do_step, self.state, action = self._pre_step(
             action, skip_mask_check or self.skip_mask_check
         )
+        print("pre step completed")
         if not do_step:
             return self.state, action, False
 
-        move = self._action_to_move(action)  # type: ignore
-
         # If action is eos or the game is over
-        if action == self.eos or self.state.is_game_over():
+
+        if action == self.eos:
+            print("action is eos")
+            print(action)
             self.done = True
             self.n_actions += 1
+
+            print("step completed")
             return self.state, self.eos, True  # type: ignore
 
-        # Stop after 5 moves
-        if self.n_actions >= 5:
-            self.done = True
-            self.n_actions += 1
-            return self.state, action, True
-
-        # If action is not eos and game is not over, perform action. This is
-        # the main chunk !
-        else:
-            valid = move in self.state.legal_moves  # type: ignore
+        print("computing action to move")
+        print(action)
+        move = self._action_to_move(action)
+        print("Done computing action to move")
+        # If action is not eos, perform action. This is the main
+        # chunk!
+        if isinstance(self.state, Board):
+            valid = move in self.state.legal_moves
             if valid:
                 # the state was internally updated in self._update_state
                 self.n_actions += 1
-
-                if self.state.gives_check(move):
-                    self.state.push(move)
-                    return self.state, self.eos, valid  # type: ignore
-
                 self.state.push(move)
 
-            return self.state, action, valid
+                print("step completed")
+                return self.state, action, valid
+            else:
+                self.n_actions += (
+                    1  # NOTE: Do we need to increment if action is not valid?
+                )
+                print("step completed")
+                return self.state, action, valid
+        else:
+            print("State is not a board!")
+            print("State type:")
+            print(type(self.state))
 
-    def _action_to_move(self, action: Tuple[int, int]) -> chess.Move:
+    def _action_to_move(self, action: Tuple[int]) -> chess.Move:
         """
         Transform an action into a chess.Move object. It treats the first
         integer as the initial square and the second integer as the destination
@@ -166,28 +199,24 @@ class GFlowChessEnv(GFlowNetEnv):
         Returns a chess.Move object representing the action.
         """
         init_square = chess.SQUARES[action[0]]
-        final_square = chess.SQUARES[action[1]]
+        final_square = chess.SQUARES[action[1]] #type: ignore
         return chess.Move(from_square=init_square, to_square=final_square)
-
-    # TODO: implement state2readable
-    def state2readable(self, state):
-        pass
 
     # DONE: implement state2policy
 
-    def state2policy(self, state=Board()) -> torch.Tensor:
+    def _state2policy(self, state) -> torch.Tensor:
         return self.fen_parser.tokenize_chess_board(board=state, env=self)
 
     def states2policy(self, states) -> torch.Tensor:
         parsed_board_list = []
         for state in states:
-            state = parsed_board_list.append(self.state2policy(state))
+            parsed_board_list.append(self._state2policy(state))
         stacked = torch.stack(parsed_board_list)
         return stacked
 
     # TODO: implement state2proxy
-    def state2proxy(
-            self, state: List | TensorType["state_dim"] = None
+    def _state2proxy(
+        self, state: List | TensorType["state_dim"] = None
     ) -> TensorType["state_proxy_dim"]:
         if torch.is_tensor(state):
             print("what the hell state is a tensor !!")
@@ -196,7 +225,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
     # TODO: implement states2proxy
     def states2proxy(
-            self, states: List | TensorType["batch", "state_dim"]
+        self, states: List | TensorType["batch", "state_dim"]
     ) -> TensorType["batch", "policy_input_dim"]:
         if torch.is_tensor(states):
             print("what the hell state is a tensor!!")
@@ -204,10 +233,10 @@ class GFlowChessEnv(GFlowNetEnv):
             return states
 
     def get_parents(
-            self,
-            state: Optional[List] = None,
-            done: Optional[bool] = None,
-            action: Optional[Tuple] = None,
+        self,
+        state: Optional[List] = None,
+        done: Optional[bool] = None,
+        action: Optional[Tuple] = None,
     ) -> tuple[List, List]:
         current_board = self.state
         if state is None:
@@ -229,14 +258,14 @@ class GFlowChessEnv(GFlowNetEnv):
             board_copy = current_board.copy()
             board_copy.push(move)
             resulting_boards.append(board_copy.copy())
-            resulting_moves.append((move.from_square,move.to_square))
+            resulting_moves.append((move.from_square, move.to_square))
             # take into consideration all pieces that could have been eaten
             for piece in missing_pieces_opponents.keys():
                 board_copy.set_piece_at(
                     move.from_square, chess.Piece.from_symbol(piece)
                 )
                 resulting_boards.append(board_copy.copy())
-                resulting_moves.append((move.from_square,move.to_square))
+                resulting_moves.append((move.from_square, move.to_square))
                 board_copy.remove_piece_at(move.from_square)
         # generate pawn movements
         for move in pawn_moves:
@@ -249,12 +278,12 @@ class GFlowChessEnv(GFlowNetEnv):
                         move.from_square, chess.Piece.from_symbol(piece)
                     )
                     resulting_boards.append(board_copy.copy())
-                    resulting_moves.append((move.from_square,move.to_square))
+                    resulting_moves.append((move.from_square, move.to_square))
                     board_copy.remove_piece_at(move.from_square)
             else:
                 resulting_boards.append(board_copy.copy())
-                resulting_moves.append((move.from_square,move.to_square))
-        return resulting_boards,resulting_moves
+                resulting_moves.append((move.from_square, move.to_square))
+        return resulting_boards, resulting_moves
 
     def legal_moves_without_capture_and_pawn_moves(self, board):
         non_capture_moves = []
@@ -262,8 +291,8 @@ class GFlowChessEnv(GFlowNetEnv):
         for move in board.legal_moves:
             # Check if the move results in a capture
             if (
-                    not board.is_capture(move)
-                    and board.piece_at(move.from_square).piece_type != chess.PAWN
+                not board.is_capture(move)
+                and board.piece_at(move.from_square).piece_type != chess.PAWN
             ):
                 non_capture_moves.append(move)
 
@@ -305,33 +334,33 @@ class GFlowChessEnv(GFlowNetEnv):
         for square in chess.SQUARES:
             piece = board.piece_at(square)
             if (
-                    piece is not None
-                    and piece.piece_type == chess.PAWN
-                    and piece.color == board.turn
+                piece is not None
+                and piece.piece_type == chess.PAWN
+                and piece.color == board.turn
             ):
                 # Get possible previous squares for the pawn
                 previous_squares = []
                 if piece.color == chess.WHITE:
                     if (
-                            square >= 16 and board.piece_at(square - 8) is None
+                        square >= 16 and board.piece_at(square - 8) is None
                     ):  # If pawn has moved at least one square forward
                         previous_squares.append(square - 8)  # Move one square back
                     if (
-                            32 >= square >= 25
-                            and board.piece_at(square - 8) is None
-                            and board.piece_at(square - 16) is None
+                        32 >= square >= 25
+                        and board.piece_at(square - 8) is None
+                        and board.piece_at(square - 16) is None
                     ):
                         # If pawn is two squares ahead of initial position
                         previous_squares.append(square - 16)  # Move two squares back
                 elif piece.color == chess.BLACK:
                     if (
-                            square < 48 and board.piece_at(square + 8) is None
+                        square < 48 and board.piece_at(square + 8) is None
                     ):  # If pawn has moved at least one square forward
                         previous_squares.append(square + 8)  # Move one square back
                     if (
-                            40 >= square >= 33
-                            and board.piece_at(square + 8) is None
-                            and board.piece_at(square + 16) is None
+                        40 >= square >= 33
+                        and board.piece_at(square + 8) is None
+                        and board.piece_at(square + 16) is None
                     ):
                         # If pawn is two squares ahead of initial position
                         previous_squares.append(square + 16)  # Move two squares back
@@ -345,28 +374,28 @@ class GFlowChessEnv(GFlowNetEnv):
                     # checks if clear behind and if not in second row
                     if piece.color == chess.WHITE:
                         if (
-                                square % 8 != 0
-                                and square - 7 >= 8
-                                and board.piece_at(square - 7) is None
+                            square % 8 != 0
+                            and square - 7 >= 8
+                            and board.piece_at(square - 7) is None
                         ):
                             previous_pawn_moves.append(chess.Move(square, square - 7))
                         if (
-                                square % 8 != 7
-                                and square - 9 >= 8
-                                and board.piece_at(square - 9) is None
+                            square % 8 != 7
+                            and square - 9 >= 8
+                            and board.piece_at(square - 9) is None
                         ):
                             previous_pawn_moves.append(chess.Move(square, square - 9))
                     elif piece.color == chess.BLACK:
                         if (
-                                square % 8 != 7
-                                and square + 7 <= 55
-                                and board.piece_at(square + 7) is None
+                            square % 8 != 7
+                            and square + 7 <= 55
+                            and board.piece_at(square + 7) is None
                         ):
                             previous_pawn_moves.append(chess.Move(square, square + 7))
                         if (
-                                square % 8 != 0
-                                and square + 9 <= 55
-                                and board.piece_at(square + 9) is None
+                            square % 8 != 0
+                            and square + 9 <= 55
+                            and board.piece_at(square + 9) is None
                         ):
                             previous_pawn_moves.append(chess.Move(square, square + 9))
 
@@ -391,7 +420,7 @@ class FenParser:
             " ": 0.0,
         }
 
-    def parse(self, fen_str: str, env: GFlowNetEnv) -> List[float]:
+    def parse(self, fen_str: str) -> List[float]:
         """Parse a the fen_str into list (vector) of integers representing the
         board's positions.
 
@@ -412,7 +441,7 @@ class FenParser:
             chain(*pieces_on_all_ranks)
         )  # creates a flat version of the board
         return [self.tokenizer[i] for i in flatten]
-          # returns the tokenized version of the board
+        # returns the tokenized version of the board
 
     def parse_rank(self, rank):
         rank_re = re.compile(r"(\d|[kqbnrpKQBNRP])")  # type: ignore
@@ -440,17 +469,18 @@ class FenParser:
     def expand(self, num_str):
         return int(num_str) * " "
 
-    def tokenize_chess_board(self, board, env) -> torch.Tensor:
+    def tokenize_chess_board(self, board: Board, env: GFlowChessEnv) -> torch.Tensor:
         """
         Tokenize a chess board using the FEN representation and return as a PyTorch tensor.
 
         Parameters:
         - board (Board): A chess board object.
+        - env (GFlowNetEnv): The environment.
 
         Returns:
         - torch.Tensor: A PyTorch tensor representing the tokenized board.
         """
         fen_str = board.fen()
         parser = env.fen_parser
-        tokenized_board = parser.parse(fen_str, env)
+        tokenized_board = parser.parse(fen_str)
         return torch.tensor(tokenized_board)

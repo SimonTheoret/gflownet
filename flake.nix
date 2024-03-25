@@ -48,6 +48,8 @@
             pythonPackages.virtualenv
             nodePackages_latest.pyright
             stockfish
+            ruff
+            ruff-lsp
           ];
 
           shellHook = ''
