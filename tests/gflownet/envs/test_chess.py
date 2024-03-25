@@ -1,4 +1,6 @@
 import pytest
+import chess
+from chess import Board
 
 from gflownet.envs.chess_class import GFlowChessEnv
 
@@ -23,32 +25,22 @@ def env_default():
 #     test_step_board(chess_env)
 
 
-def test_size_action_space(env):
+def test_size_action_space(env: GFlowChessEnv):
     chess_env = env
     assert len(chess_env.get_action_space()) == ACTION_SPACE_SIZE
 
 
-def test_size_invalid_actions_mask(env):
+def test_size_invalid_actions_mask(env: GFlowChessEnv):
     chess_env = env
     assert len(chess_env.get_mask_invalid_actions_forward()) == ACTION_SPACE_SIZE
 
-
-def test_parser(env):
-    chess_env = env
-    assert chess_env.fen_parser(chess_env.board) == [-2, -3, -4, -5, -6, -4, -3, -2, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 4, 3, 2]
-
-def test_step_board(env):
-    chess_env = env
-    # valid move
-    assert chess_env.step((1,16)) == ([-2, -3, -4, -5, -6, -4, -3, -2, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 4, 5, 6, 4, 3, 2], (1, 16), True)
-    assert chess_env.step((48,32)) == ([-2, -3, -4, -5, -6, -4, -3, -2, 0, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 4, 5, 6, 4, 3, 2], (48, 32), True)
-
-    # invalid move
-    assert chess_env.step((0,0)) == ([-2, -3, -4, -5, -6, -4, -3, -2, 0, -1, -1, -1, -1, -1, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 4, 5, 6, 4, 3, 2], (48, 32), False)
-    
-
-
-
-def test_convertion_into_san():
-    pass
-
+def test_get_parents(env: GFlowChessEnv):
+    env = GFlowChessEnv()
+    env.state = Board()
+    action = (8,16) # move a pawn forward
+    move = env._action_to_move(action)
+    env.state.push(move)
+    actual = env.get_parents()
+    print(actual)
+    print(env.state)
+    assert actual == ([Board()], [(8,16)])

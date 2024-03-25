@@ -201,7 +201,7 @@ class GFlowChessEnv(GFlowNetEnv):
         stacked = torch.stack(parsed_board_list)
         return stacked
 
-    # TODO: implement state2proxy
+    # DONE: implement state2proxy
     def _state2proxy(
         self, state: List | TensorType["state_dim"] = None
     ) -> TensorType["state_proxy_dim"]:
@@ -210,7 +210,7 @@ class GFlowChessEnv(GFlowNetEnv):
         else:
             return state
 
-    # TODO: implement states2proxy
+    # DONE: implement states2proxy
     def states2proxy(
         self, states: List | TensorType["batch", "state_dim"]
     ) -> TensorType["batch", "policy_input_dim"]:
@@ -219,19 +219,19 @@ class GFlowChessEnv(GFlowNetEnv):
         else:
             return states
 
-    def get_parents(self, state = None, done = None, action=None):
-        state = self._get_state(state)
-        done = self._get_done(done)
-        if done:
-            return [state], [self.eos]
-        if self.equal(state, self.source):
-            return [], []
-        copy_state = state.copy()
-        action = copy_state.pop()
-        action = (int(action.from_square), int(action.to_square))
-        return [copy_state], [action]
+    # def get_parents(self, state = None, done = None, action=None):
+    #     state = self._get_state(state)
+    #     done = self._get_done(done)
+    #     if done:
+    #         return [state], [self.eos]
+    #     if self.equal(state, self.source):
+    #         return [], []
+    #     copy_state = state.copy()
+    #     action = copy_state.pop()
+    #     action = (int(action.from_square), int(action.to_square))
+    #     return [copy_state], [action]
     
-    def get_parentss(
+    def get_parents(
         self,
         state: Optional[List] = None,
         done: Optional[bool] = None,
