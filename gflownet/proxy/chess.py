@@ -21,7 +21,7 @@ class Chess(Proxy):
         with SimpleEngine.popen_uci(self.engine_path) as eng:
             scores = []
             for state in states:
-                centipawn=eng.analyse(state, engine.Limit(time=0.1), info=engine.INFO_SCORE)["score"].relative.score()
+                centipawn=eng.analyse(state, engine.Limit(time=1.0), info=engine.INFO_SCORE)["score"].relative.score()
                 if centipawn is not None:
                     scores.append(1 / (1 + 10 ** (centipawn/4)))
                 else:
