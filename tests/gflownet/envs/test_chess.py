@@ -2,7 +2,7 @@ import pytest
 import chess
 from chess import Board
 
-from gflownet.envs.chess_class import GFlowChessEnv
+from gflownet.envs.chess_class import FenParser, GFlowChessEnv
 
 ACTION_SPACE_SIZE = 4097
 
@@ -34,13 +34,21 @@ def test_size_invalid_actions_mask(env: GFlowChessEnv):
     chess_env = env
     assert len(chess_env.get_mask_invalid_actions_forward()) == ACTION_SPACE_SIZE
 
+def parse(board: Board, env: GFlowChessEnv):
+    parser = FenParser()
+    return parser.tokenize_chess_board(board, env)
+
 def test_get_parents(env: GFlowChessEnv):
     env = GFlowChessEnv()
-    env.state = Board()
-    action = (8,16) # move a pawn forward
-    move = env._action_to_move(action)
-    env.state.push(move)
+    env.state = Board(fen = "rnbqkbnr/ppp1pppp/3p4/3P4/8/8/PPP1PPPP/RNBQKBNR")
+    print(env.state.turn)
+    # action = (1,16) # move a pawn forward
+    # move = env._action_to_move(action)
+    # env.state.push(move)
     actual = env.get_parents()
-    print(actual)
-    print(env.state)
+    for board in actual[0]:
+        print(board)
+        print("\n")
+    print(actual[1])
+    print(f"Length of the parents list: {len(actual[0])}")
     assert actual == ([Board()], [(8,16)])
