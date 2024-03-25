@@ -139,28 +139,21 @@ class GFlowChessEnv(GFlowNetEnv):
         """
 
         # Generic pre-step checks
-        print("prestep")
         do_step, self.state, action = self._pre_step(
             action, skip_mask_check or self.skip_mask_check
         )
-        print("prestep completed")
         if not do_step:
-            print("do not step")
             return self.state, action, False
 
         # If action is eos or the game is over
         if action == self.eos:
-            print("action is eos")
             print(action)
             self.done = True
             self.n_actions += 1
 
-            print("eos step completed")
             return self.state, self.eos, True  # type: ignore
 
-        print("computing action to move")
         move = self._action_to_move(action)
-        print("computing action to move")
         # If action is not eos, perform action. This is the main
         # chunk!
         if isinstance(self.state, Board):
@@ -170,13 +163,11 @@ class GFlowChessEnv(GFlowNetEnv):
                 self.n_actions += 1
                 self.state.push(move)
 
-                print("step completed")
                 return self.state, action, valid
             else:
                 self.n_actions += (
                     1  # NOTE: Do we need to increment if action is not valid?
                 )
-                print("step completed")
                 return self.state, action, valid
         else:
             print("State is not a board!")
