@@ -147,7 +147,6 @@ class GFlowChessEnv(GFlowNetEnv):
 
         # If action is eos or the game is over
         if action == self.eos:
-            print(action)
             self.done = True
             self.n_actions += 1
 
@@ -160,6 +159,7 @@ class GFlowChessEnv(GFlowNetEnv):
             valid = move in self.state.legal_moves
             if valid:
                 # the state was internally updated in self._update_state
+                self.state = self.state.copy()
                 self.n_actions += 1
                 self.state.push(move)
 
@@ -219,19 +219,33 @@ class GFlowChessEnv(GFlowNetEnv):
         else:
             return states
 
-    def get_parents(
+    def get_parents(self, state = None, done = None, action=None):
+        state = self._get_state(state)
+        done = self._get_done(done)
+        if done:
+            return [state], [self.eos]
+        if self.equal(state, self.source):
+            return [], []
+        copy_state = state.copy()
+        action = copy_state.pop()
+        action = (int(action.from_square), int(action.to_square))
+        return [copy_state], [action]
+    
+    def get_parentss(
         self,
         state: Optional[List] = None,
         done: Optional[bool] = None,
         action: Optional[Tuple] = None,
     ) -> tuple[List, List]:
-        current_board = self.state
+        current_board: Board = self.state
         if state is None:
             state = self.state
         if done is None:
             done = self.done
         if done:
             return [state], [self.eos]
+        # if action == self.eos: #NOTE: needed?
+        #     return [state], [self.eos]
         if state == self.source:
             return [], []
         # remove all move that could lead to a capture and pawn movements
@@ -270,6 +284,7 @@ class GFlowChessEnv(GFlowNetEnv):
             else:
                 resulting_boards.append(board_copy.copy())
                 resulting_moves.append((move.from_square, move.to_square))
+        print(resulting_boards[0], resulting_moves[0])
         return resulting_boards, resulting_moves
 
     def legal_moves_without_capture_and_pawn_moves(self, board):
@@ -315,6 +330,7 @@ class GFlowChessEnv(GFlowNetEnv):
         return starting_piece_count
 
     def generate_pawn_moves(self, board, missing_pieces_opponents):
+        """Take all the missing pieces and make all the possibles pawn moves."""
         previous_pawn_moves = []
 
         # Iterate over all squares on the board
