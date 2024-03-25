@@ -1040,7 +1040,6 @@ class GFlowNetAgent:
                     losses = self.trajectorybalance_loss(
                         it * self.ttsr + j, batch
                     )  # returns (opt loss, *metrics)
-                    breakpoint()
                 elif self.loss == "detailedbalance":
                     losses = self.detailedbalance_loss(it * self.ttsr + j, batch)
                 elif self.loss == "forwardlooking":
