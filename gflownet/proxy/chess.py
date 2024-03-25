@@ -24,9 +24,7 @@ class Chess(Proxy):
                 centipawn=eng.analyse(state, engine.Limit(time=1.0), info=engine.INFO_SCORE)["score"].relative.score()
                 if centipawn is not None:
                     scores.append(1 / (1 + 10 ** (centipawn/4)))
-                    print("proxy computed")
                 else:
                     scores.append(0)
-                    print("proxy not computed")
         return torch.tensor(scores)
 
