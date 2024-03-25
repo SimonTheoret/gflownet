@@ -50,6 +50,12 @@
             stockfish
             ruff
             ruff-lsp
+            nodePackages_latest.bash-language-server
+            shellcheck
+            shfmt
+            isort
+            nixfmt
+            nil 
           ];
 
           shellHook = ''

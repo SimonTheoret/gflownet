@@ -165,9 +165,6 @@ class GFlowChessEnv(GFlowNetEnv):
 
                 return self.state, action, valid
             else:
-                self.n_actions += (
-                    1  # NOTE: Do we need to increment if action is not valid?
-                )
                 return self.state, action, valid
         else:
             print("State is not a board!")
@@ -408,7 +405,7 @@ class FenParser:
             "Q": 11.0,
             "K": 12.0,
             " ": 0.0,
-        }
+        } #TODO: Change this encoding for a one-hot encoding
 
     def parse(self, fen_str: str) -> List[float]:
         """Parse a the fen_str into list (vector) of integers representing the
