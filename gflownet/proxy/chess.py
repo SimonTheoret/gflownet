@@ -20,19 +20,22 @@ class Chess(Proxy):
     def __init__(self, engine_path: str, **kwargs):
         super().__init__(**kwargs)
         self.engine_path = engine_path
-        self.boards = {}
         self.default_scorer = partial(self.compute_single_score, time_limit = 0.5, proxy_score = default_proxy_score)
 
     def setup(self, env=None):
-        assert env is not None
-        self.boards[id(env)] = env.state
+        "Leggo"
+        pass
 
     def __call__(self, states: TensorType["batch", 64]) -> Tensor:
+        if isinstance(states, Board):
+            return torch.tensor([self.default_scorer(states)])
         copied = states.copy()
-        copied = copied.tolist()
+        if torch.is_tensor(states):
+            copied = copied.tolist()
         with concurrent.futures.ProcessPoolExecutor() as executor:
-            executor.map(self.default_scorer, copied)
-        return torch.tensor(copied)
+            scores = executor.map(self.default_scorer, copied)
+            executor.shutdown(wait=True, cancel_futures=False)
+        return torch.tensor(list(scores))
 
     def compute_single_score(self, state: Board, time_limit: float, proxy_score: Callable[[int|None],float]) -> float:
         with SimpleEngine.popen_uci(self.engine_path) as eng:
