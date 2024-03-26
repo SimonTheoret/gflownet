@@ -3,6 +3,7 @@ import chess
 from chess import Board
 
 from gflownet.envs.chess_class import FenParser, GFlowChessEnv
+from tests.gflownet.envs import common
 
 ACTION_SPACE_SIZE = 4097
 
@@ -52,3 +53,14 @@ def test_get_parents(env: GFlowChessEnv):
     print(actual[1])
     print(f"Length of the parents list: {len(actual[0])}")
     assert actual == ([Board()], [(8,16)])
+
+class TestChessCommon(common.BaseTestsDiscrete):
+    """Common tests for Chess."""
+    @pytest.fixture(autouse=True)
+    def setup(self, env):
+        self.env = env
+        self.repeats = {
+            "test__reset__state_is_source": 10,
+            "test__forward_actions_have_nonzero_backward_prob":100,
+        }
+        self.n_states = {}  # TODO: Populate.

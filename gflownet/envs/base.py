@@ -502,12 +502,12 @@ class GFlowNetEnv:
         return actions, logprobs
 
     def get_logprobs(
-        self,
-        policy_outputs: TensorType["n_states", "policy_output_dim"],
-        actions: TensorType["n_states", "actions_dim"],
-        mask: TensorType["batch_size", "policy_output_dim"] = None,
-        states_from: Optional[List] = None,
-        is_backward: bool = False,
+            self,
+            policy_outputs: TensorType["n_states", "policy_output_dim"],
+            actions: TensorType["n_states", "actions_dim"],
+            mask: TensorType["batch_size", "policy_output_dim"] = None,
+            states_from: Optional[List] = None,
+            is_backward: bool = False,
     ) -> TensorType["batch_size"]:
         """
         Computes log probabilities of actions given policy outputs and actions. This
@@ -521,7 +521,7 @@ class GFlowNetEnv:
 
         mask : tensor
             The mask of invalid actions. For continuous or mixed environments, the mask
-            may be tensor with an arbitrary length contaning information about special
+            may be tensor with an arbitrary length containing information about special
             states, as defined elsewhere in the environment.
 
         actions : tensor
@@ -540,8 +540,18 @@ class GFlowNetEnv:
         device = policy_outputs.device
         ns_range = torch.arange(policy_outputs.shape[0]).to(device)
         logits = policy_outputs.clone()
+        # Print statements to inspect values and shapes
+        print("Logits shape:", logits.shape)
+        print("Policy outputs shape:", policy_outputs.shape)
+        print("Actions shape:", actions.shape)
+        print(actions)
+        print("Mask shape:", mask.shape if mask is not None else None)
+
         if mask is not None:
             logits[mask] = -torch.inf
+
+        # Add a print statement here to check the values of logits after applying the mask
+        print("Logits after mask:", logits)
         action_indices = (
             torch.tensor(
                 [self.action_space.index(tuple(action.tolist())) for action in actions]
@@ -549,7 +559,16 @@ class GFlowNetEnv:
             .to(int)
             .to(device)
         )
+
+        # Print statement to check the action_indices tensor
+        print("Action indices:", action_indices)
+
         logprobs = self.logsoftmax(logits)[ns_range, action_indices]
+        print("Mask value", mask)
+        # Print statement to check the logprobs tensor
+        print(logprobs.shape)
+        print("Log probabilities:", logprobs)
+
         return logprobs
 
     # TODO: add seed
