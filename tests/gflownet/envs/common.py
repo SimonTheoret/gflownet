@@ -155,7 +155,6 @@ class BaseTestsCommon:
                     is_backward=True,
                 )
                 if not torch.isfinite(logprobs_bw):
-                    breakpoint()
                 assert logprobs_bw > -1e6
                 state_prev = copy(state_next)  # TODO: We never use this. Remove?
 
@@ -204,8 +203,7 @@ class BaseTestsCommon:
                         states_from=[self.env.state],
                         is_backward=False,
                     )
-                    if not torch.isfinite(logprobs_fw):
-                        breakpoint()
+                    assert torch.isfinite(logprobs_fw)
                     assert logprobs_fw > -1e6
                     # state_prev = copy(state_next)  # TODO: Not accessed. Remove?
 
