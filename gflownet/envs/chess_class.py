@@ -23,7 +23,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
     def __init__(
             self,
-            fen: Optional[str] = "rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w - - 0 1",
+            fen: Optional[str] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1",
             **kwargs,
     ):
         """
