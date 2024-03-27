@@ -13,7 +13,7 @@ from gflownet.proxy.base import Proxy
 def default_proxy_score(centipawn: int | None) -> float:
     if centipawn is not None:
         try:
-            return 1 / (1 + 10 ** (abs(centipawn) / 4))
+            return -1 / (1 + 10 ** (-centipawn / 400))
         except OverflowError:
             return 0.0
     else:

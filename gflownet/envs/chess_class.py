@@ -48,7 +48,7 @@ class GFlowChessEnv(GFlowNetEnv):
         # initial count of actions
         self.n_actions = 0
 
-        # How many actions can we do un a single sequence (maximum length of the sequence)
+        # How many actions can we do in a single sequence (maximum length of the sequence)
         self.max_n_actions = 7
 
         super().__init__(**kwargs)
@@ -92,6 +92,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
         # if sequence is completed or the game is over
         if isinstance(state, Board):
+
             if state.is_game_over() or self.n_actions >= self.max_n_actions:
                 return [
                     True if action != self.eos else False
