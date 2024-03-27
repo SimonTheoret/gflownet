@@ -23,7 +23,7 @@ class GFlowChessEnv(GFlowNetEnv):
 
     def __init__(
             self,
-            fen: Optional[str] = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1",
+            fen: Optional[str] = "rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w - - 0 1",
             **kwargs,
     ):
         """
@@ -49,7 +49,7 @@ class GFlowChessEnv(GFlowNetEnv):
         self.n_actions = 0
 
         # How many actions can we do un a single sequence (maximum length of the sequence)
-        self.max_n_actions = 20
+        self.max_n_actions = 7
 
         super().__init__(**kwargs)
 
@@ -239,7 +239,9 @@ class GFlowChessEnv(GFlowNetEnv):
             done: Optional[bool] = None,
             action: Optional[Tuple] = None,
     ) -> tuple[List, List]:
-        current_board = self.state.copy()
+        current_board = state.copy() if state is not None else self.state.copy()
+        exact_parent_state = current_board.copy()
+        exact_parent_move = exact_parent_state.pop()
         if current_board.turn == chess.WHITE:
             current_board.turn = chess.BLACK
         else:
@@ -260,6 +262,11 @@ class GFlowChessEnv(GFlowNetEnv):
         pawn_moves = self.generate_pawn_moves(current_board, missing_pieces_opponents)
         resulting_boards = []
         resulting_moves = []
+
+        #FIXME: This should not be necessary
+        resulting_boards.append(exact_parent_state)
+        resulting_moves.append((exact_parent_move.from_square, exact_parent_move.to_square))
+
         # generate board from movements
         for move in non_pawn_moves:
             board_copy = current_board.copy()
@@ -290,7 +297,6 @@ class GFlowChessEnv(GFlowNetEnv):
             else:
                 resulting_boards.append(board_copy.copy())
                 resulting_moves.append((move.to_square, move.from_square))
-        print(resulting_boards[0], resulting_moves[0])
         return resulting_boards, resulting_moves
 
     def legal_moves_without_capture_and_pawn_moves(self, board):
