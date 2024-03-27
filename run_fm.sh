@@ -6,4 +6,4 @@ python main.py gflownet=flowmatch\
        logger.checkpoints.period=500 \
        logger.test.period=1000 \
        policy.forward.checkpoint=forward \
-       policy.backward.checkpoint=backward \
+       policy.backward.checkpoint=backward 
