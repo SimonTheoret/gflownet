@@ -1,4 +1,4 @@
-python main.py gflownet=flowmatch\
+python main.py gflownet=forwardlooking\
        env=chess \
        proxy=chess \
        user.logdir.root=logs \
