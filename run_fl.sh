@@ -1,4 +1,5 @@
-python main.py gflownet=forwardlooking\
+#da best loss
+python main.py gflownet=forwardlooking \
        env=chess \
        proxy=chess \
        user.logdir.root=logs \
