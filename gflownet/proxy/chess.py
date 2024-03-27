@@ -43,4 +43,4 @@ class Chess(Proxy):
             centipawn = eng.analyse(
                 state, engine.Limit(time=time_limit), info=engine.INFO_SCORE
             )["score"].wdl().relative.expectation()
-        return centipawn
+        return -centipawn
