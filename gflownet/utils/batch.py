@@ -190,7 +190,8 @@ class Batch:
 
         # Add data samples to the batch
         for env, action, valid in zip(envs, actions, valids):
-            if train is False and env.done is False:
+            #tryna get full traj
+            if train is True and env.done is False:
                 continue
             if not valid:
                 continue

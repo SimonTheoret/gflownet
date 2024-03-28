@@ -146,7 +146,6 @@ def main(args):
     env = gflownet.env
 
     base_dir = Path(args.output_dir or args.run_path)
-
     # ---------------------------------
     # -----  Test GFlowNet model  -----
     # ---------------------------------
@@ -211,6 +210,7 @@ def main(args):
                 {
                     "readable": [env.state2readable(x) for x in x_sampled],
                     "energies": energies.tolist(),
+                    "trajectories": [batch.states]
                 }
             )
             df.to_csv(tmp_dir / f"gfn_samples_{i}.csv")
