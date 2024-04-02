@@ -49,7 +49,7 @@ class GFlowChessEnv(GFlowNetEnv):
         self.n_actions = 0
 
         # How many actions can we do in a single sequence (maximum length of the sequence)
-        self.max_n_actions = 7
+        self.max_n_actions = 20
 
         super().__init__(**kwargs)
 
