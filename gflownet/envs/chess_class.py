@@ -420,23 +420,24 @@ class GFlowChessEnv(GFlowNetEnv):
 
 class FenParser:
     def __init__(self):
+        one_hot_classes = torch.nn.functional.one_hot(torch.arange(0,13)).type(torch.FloatTensor)
         self.tokenizer = {
-            "p": 1.0,
-            "r": 2.0,
-            "n": 3.0,
-            "b": 4.0,
-            "q": 5.0,
-            "k": 6.0,
-            "P": 7.0,
-            "R": 8.0,
-            "N": 9.0,
-            "B": 10.0,
-            "Q": 11.0,
-            "K": 12.0,
-            " ": 0.0,
+            "p": one_hot_classes[0],
+            "r": one_hot_classes[1],
+            "n": one_hot_classes[2],
+            "b": one_hot_classes[3],
+            "q": one_hot_classes[4],
+            "k": one_hot_classes[5],
+            "P": one_hot_classes[6],
+            "R": one_hot_classes[7],
+            "N": one_hot_classes[8],
+            "B": one_hot_classes[9],
+            "Q": one_hot_classes[10],
+            "K": one_hot_classes[11],
+            " ": one_hot_classes[12],
         }  # TODO: Change this encoding for a one-hot encoding
 
-    def parse(self, fen_str: str) -> List[float]:
+    def parse(self, fen_str: str) -> List[torch.Tensor]:
         """Parse a the fen_str into list (vector) of integers representing the
         board's positions.
 
@@ -499,4 +500,4 @@ class FenParser:
         fen_str = board.fen()
         parser = env.fen_parser
         tokenized_board = parser.parse(fen_str)
-        return torch.tensor(tokenized_board)
+        return torch.cat(tokenized_board)
