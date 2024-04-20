@@ -48,6 +48,9 @@
             pythonPackages.virtualenv
             nodePackages_latest.pyright
             stockfish
+            texlive.combined.scheme-full
+            texlab
+            tectonic
             ruff
             ruff-lsp
             nodePackages_latest.bash-language-server
