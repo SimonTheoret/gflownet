@@ -81,16 +81,19 @@
 % CCC: Contexte Contenu Conclusion
 
 \begin{abstract}
-	Dans ce rapport, nous présentons GFlowChess, un modèle basé sur la
-	famille de modèle GFlownet capable de simuler une partie d'échec
-	suivant les règles traditionnelle du jeu. Nous évaluons la
-	performance du modèle à l'aide de Stockfish, un moteur d'échec
-	moderne capable d'évaluer la probabilité de victoire d'un
-	match. Nous avons testé 2 types de pertes ainsi que deux fonctions
-	de récompenses pour observer le déroulement des trajectoires. Nous
-	avons en effet été en mesure de constater les effets des fonctions
-	de récompenses sur la distribution des trajectoires échantillonnées
-	et de favoriser un joueur ou bien un autre.
+  Les joueurs artificiels d'échec les plus performant, basés sur les
+  méthodes d'apprentissage par renforcement, sont en mesure de battre
+  les meilleurs joueurs d'échecs humain.  Dans ce rapport, nous
+  présentons GFlowChess, un modèle génératif basé sur la famille de
+  modèle GFlownet capable de simuler une partie d'échec suivant les
+  règles traditionnelle du jeu. Nous évaluons la performance du modèle
+  à l'aide de Stockfish, un moteur d'échec moderne capable d'évaluer
+  la probabilité de victoire d'un match. Nous avons testé 2 types de
+  pertes ainsi que deux fonctions de récompenses pour observer le
+  déroulement des trajectoires. Nous avons en effet été en mesure de
+  constater les effets des fonctions de récompenses sur la
+  distribution des trajectoires échantillonnées et de favoriser par
+  l'entremise de la fonction de récompense un joueur.
 \end{abstract}
 
 \subsection{GFlowNet}
@@ -160,11 +163,11 @@ possibles. Une action est définie comme une paire de cases (origine,
 destination) sur l'échiquier.
 
 \begin{figure}[H]
-	\centering \setchessboard{color=black,clearboard,showmover=false}
-	\chessboard[ pgfstyle= {[base,at={\pgfpoint{0pt}{-0.3ex}}]text},
-		text= \fontsize{1.2ex}{1.2ex}\bfseries
-		\sffamily\getfieldnumber\currentwq, markboard]
-	\caption{cases du tableau d'échiquier encodées en chiffres}
+  \centering \setchessboard{color=black,clearboard,showmover=false}
+  \chessboard[ pgfstyle= {[base,at={\pgfpoint{0pt}{-0.3ex}}]text},
+    text= \fontsize{1.2ex}{1.2ex}\bfseries
+    \sffamily\getfieldnumber\currentwq, markboard]
+  \caption{cases du tableau d'échiquier encodées en chiffres}
 \end{figure}
 
 [17,35] est un exemple d'action possible qui permet d'aller de la case
@@ -176,22 +179,22 @@ l'état actuel du jeu. Cela permet d'éviter de choisir des actions qui
 ne respectent pas les règles du jeu.
 
 \begin{figure}[H]
-	\centering
+  \centering
 	\begin{subfigure}[b]{0.45\textwidth}
-		\centering \setchessboard{showmover=false}
-		\chessboard[setfen=r5k1/1b1p1ppp/p7/1p1Q4/2p1r3/PP4Pq/BBP2b1P/R4R1K
-			w - - 0 20, pgfstyle=border,markfields={d4,d6}, color=blue!50,
-			colorbackfield=c5, pgfstyle=color, opacity=0.5, color=red,
-			markfield={d5}]
-		\caption{mouvements valides}
+	  \centering \setchessboard{showmover=false}
+          \chessboard[setfen=r5k1/1b1p1ppp/p7/1p1Q4/2p1r3/PP4Pq/BBP2b1P/R4R1K
+            w - - 0 20, pgfstyle=border,markfields={d4,d6},
+            color=blue!50, colorbackfield=c5, pgfstyle=color,
+            opacity=0.5, color=red, markfield={d5}]
+	  \caption{mouvements valides}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.45\textwidth}
-		\centering \setchessboard{showmover=false}
-		\chessboard[setfen=r5k1/1b1p1ppp/p7/1p6/2p1r3/PP1Q2Pq/BBP2b1P/R4R1K
-			b - - 0 20, pgfstyle=border,markfields={d4,d6}, color=blue!50,
-			colorbackfield=c5, pgfstyle=color, opacity=0.5, color=red,
-			markfield={d5}]
-		\caption{Mouvement invalide}
+	  \centering \setchessboard{showmover=false}
+          \chessboard[setfen=r5k1/1b1p1ppp/p7/1p6/2p1r3/PP1Q2Pq/BBP2b1P/R4R1K
+            b - - 0 20, pgfstyle=border,markfields={d4,d6},
+            color=blue!50, colorbackfield=c5, pgfstyle=color,
+            opacity=0.5, color=red, markfield={d5}]
+	  \caption{Mouvement invalide}
 	\end{subfigure}
 \end{figure}
 
@@ -211,15 +214,15 @@ Nous avons été en mesure d'entraîner pour 5000 itérations un modèle
 GFlowNet utilisant la perte TB. De plus, nous avons limité à 10 coups
 la durée des séquences. La courbe de perte est présentée ci-dessous:
 \begin{figure}[H]
-	\centering \includegraphics[scale=0.15]{tb-loss.png}
-	\caption{Perte TB du modèle sur 5000 itérations}
+  \centering \includegraphics[scale=0.15]{tb-loss.png}
+  \caption{Perte TB du modèle sur 5000 itérations}
 	\label{tbloss}
 \end{figure}
 Or, notre modèle à encore de la difficulté à faire des ouvertures que
 Stockfish juge bonne:
 \begin{figure}[H]
-	\centering \includegraphics[scale=0.15]{tb-mean-reward.png}
-	\caption{Récompense moyenne du modèle sur 5000 itérations}
+  \centering \includegraphics[scale=0.15]{tb-mean-reward.png}
+  \caption{Récompense moyenne du modèle sur 5000 itérations}
 	\label{tbreward}
 \end{figure}
 En effet, la récompense moyenne n'augmente pas durant l'apprentissage
