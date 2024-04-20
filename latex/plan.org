@@ -1,5 +1,77 @@
+#+title:     Planification rapport final (LaTeX)
+#+author:    Simon Théorêt
+#+email:     simonteoret@hotmail.com
+
 * GFlowChess Latex
 ** Sections
 Rappel CCC: Contexte Contenu Conclusion
 *** Abstract
+**** Contexte
+- [ ] Alpha Go: Citer papier 
+- [ ] Gflownet
+- [ ] Self play
+- [ ] Stockfish
+**** Contenu
+- [ ] Deux pertes différentes
+- [ ] Deux fonctions de récompenses
+**** Conclusion 
+- [ ] Changer comportement global des trajectoires
+- [ ] Comportement agressifs ?
+- [ ] Favoriser un joueur.
+*** Introduction (contexte, motivation, résumé)
+**** Contexte
+- [ ] Taille de l'espace des parties possibles
+- [ ] Complexité stratégique
+- [ ] 'Résolu' par Alpha Go
+  - [ ] Objectif n'est pas de faire compétition à alpha go
+- [ ] Différent de /Maia/: objectif n'est pas de concevoir un modèl
+  qui imite le comportement humain
+**** Contenu
+- [ ] Donc, GFlowNet est approprié: "Les modèles génératifs GFlowNet
+  sont particulièrement bien adaptés au cas des échecs de par le
+  déroulement séquentiel d’une partie et le vaste potentiel
+  d’exploration des meilleurs stratégie"
+- [ ] But: Explorer comment modifier fonctions de pertes/récompenses
+  change la façon dont se comporte le modèle entraîné
+- [ ] Récompense intermédiaire: Flow-Matching/Forward-Looking. Semble être le meilleur choix
+- [ ] Difficulté rencontrées: Flow-Matching/Forward-Looking loss, ~get_parents()~,
+  entraînement long, dépendance à stockfish, difficulté à évaluer
+  qualité des parties (score final, mais stratégies douteuses)
+**** Conclusion
+- [ ] Capable de modifier comportement du modèle pour beaucoup favoriser
+  un seul joueur
+- [ ] N'apprends pas forcément de bonnes stratégies
+*** Revue de la littérature
+J'aimerais y inclure une référence vers la Flow-Matching/Forward-Looking loss,
+intermediary step.
+**** Contexte
 - [ ] 
+**** Contenu
+- [ ] 
+**** Conclusion
+- [ ] 
+*** Méthodes
+**** Contexte
+- [ ] 
+**** Contenu
+- [ ] 
+**** Conclusion
+- [ ] 
+*** Résultats
+**** Contexte
+- [ ] 
+**** Contenu
+- [ ] 
+**** Conclusion
+- [ ] 
+*** Conclusions
+**** Contexte
+- [ ] 
+**** Contenu
+- [ ] 
+**** Conclusion
+- [ ] 
+*** Contributions
+Demander aux 'participants d'y inscrire leur contributions (/lol/)
+*** Références
+Utiliser références de [[file:~/Downloads/revuelit.pdf][revue de littérature]] 
