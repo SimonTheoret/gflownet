@@ -7,70 +7,118 @@
 Rappel CCC: Contexte Contenu Conclusion
 *** Abstract
 **** Contexte
-- [ ] Alpha Go: Citer papier 
-- [ ] Gflownet
-- [ ] Self play
+- [X] Alpha Zero: Citer papier 
+- [X] Gflownet
+- [X] Self play
 - [ ] Stockfish
 **** Contenu
-- [ ] Deux pertes différentes
-- [ ] Deux fonctions de récompenses
+- [X] Deux pertes différentes
+- [X] Deux fonctions de récompenses
 **** Conclusion 
-- [ ] Changer comportement global des trajectoires
-- [ ] Comportement agressifs ?
-- [ ] Favoriser un joueur.
+- [X] Changer comportement global des trajectoires
+- [X] Comportement agressifs ?
+- [X] Favoriser un joueur.
 *** Introduction (contexte, motivation, résumé)
 **** Contexte
-- [ ] Taille de l'espace des parties possibles
-- [ ] Complexité stratégique
-- [ ] 'Résolu' par Alpha Go
-  - [ ] Objectif n'est pas de faire compétition à alpha go
+- [X] Taille de l'espace des parties possibles
+- [X] Complexité stratégique
+- [X] 'Résolu' par AlphaZero
+  - [X] Objectif n'est pas de faire compétition à alpha go
 - [ ] Différent de /Maia/: objectif n'est pas de concevoir un modèl
-  qui imite le comportement humain
+    qui imite le comportement humain
 **** Contenu
-- [ ] Donc, GFlowNet est approprié: "Les modèles génératifs GFlowNet
-  sont particulièrement bien adaptés au cas des échecs de par le
-  déroulement séquentiel d’une partie et le vaste potentiel
-  d’exploration des meilleurs stratégie"
-- [ ] But: Explorer comment modifier fonctions de pertes/récompenses
+- [X] Donc, GFlowNet est approprié:
+  "Les modèles génératifs GFlowNet sont particulièrement bien adaptés
+  au cas des échecs de par le rg déroulement séquentiel d’une partie
+  et le vaste potentiel d’exploration des meilleurs stratégie"
+- [X] But: Explorer comment modifier fonctions de pertes/récompenses
   change la façon dont se comporte le modèle entraîné
-- [ ] Récompense intermédiaire: Flow-Matching/Forward-Looking. Semble être le meilleur choix
+- [X] Récompense intermédiaire: Flow-Matching/Forward-Looking. Semble être le meilleur choix
+**** Conclusion
+- [X] Capable de modifier comportement du modèle pour beaucoup favorise
+  un seul joueur
+- [ ] N'apprends pas forcément de bonnes stratégies
 - [ ] Difficulté rencontrées: Flow-Matching/Forward-Looking loss, ~get_parents()~,
   entraînement long, dépendance à stockfish, difficulté à évaluer
   qualité des parties (score final, mais stratégies douteuses)
-**** Conclusion
-- [ ] Capable de modifier comportement du modèle pour beaucoup favoriser
-  un seul joueur
-- [ ] N'apprends pas forcément de bonnes stratégies
 *** Revue de la littérature
-J'aimerais y inclure une référence vers la Flow-Matching/Forward-Looking loss,
-intermediary step.
+Discuter de GFlowNet comme un modèle génératif récent. J'aimerais y
+inclure une référence vers la Trajectory Balance et Forward Looking
+loss, intermediary step. Voici les sources:
+# - [[https://arxiv.org/abs/2106.04399][Flow Matching Loss]]  pas la bonne loss
+- [[https://arxiv.org/abs/2201.13259][Trajectory Balance Loss]]
+- [[https://arxiv.org/abs/2302.01687][Forward Looking loss]]
+Mentionner l'excellente documentation de l'équipe de Stockfish: [[https://github.com/official-stockfish/nnue-pytorch/blob/master/docs/nnue.md#halfkp][Docs]]?
+Mentionner l'usage de GFlowNet en contexte de [[https://arxiv.org/abs/2310.02779][zero-sum
+games]]. Important de discuter de [[Maia][Maia]], un modèle qui réplique le
+comportement humain. Finalement, citer AlphaZero, un programme plus
+général que seulement au échec mais qui a battu les meilleurs
+programmes d'échec.
 **** Contexte
-- [ ] 
+- [X] GFlowNet comme modèle récent
+- [ ] Échecs déjà touché par le ML:
+  - [ ] Stockfish, un moteur d'échec (évaluation)
+  - [ ] Maia, un modèle qui joue comme un humain
+  - [ ] AlphaZero, le sur-humain
+- [ ] D'autres jeux tel que connect for touché par GFLowNet
 **** Contenu
-- [ ] 
+- [ ] Introduire FlowMatching ou Forward Looking loss
+- [ ] Introduire Trajectory Balance
+- [ ] Discuter de Stockfish comme outils d'évaluation
+- [ ] Parler de Zero-sum games (environnement stochastique)
 **** Conclusion
-- [ ] 
+- [ ] Récent mais plein de promesse (mettons)
 *** Méthodes
+Reprendre et améliorer le contenu de devoir 'final'
 **** Contexte
-- [ ] 
+- [ ] Aborder rapidement la complexité des échecs
+- [ ] Environnement non stochastique: GFlowNet joue contre lui-même
+- [ ] Implémenté avec librairie du prof
+- [ ] Usage de la librairie python-chess pour simuler notre environnement
 **** Contenu
-- [ ] 
+- [ ] Choix de proxy (parler de nos deux choix)
+- [ ] Multi-processing pour Stockfish
+- [ ] Fonction de pertes
+- [ ] Prendre quelques images de plateau
+- [ ] Chialer sur ~get_parents()~
+- [ ] Transformer (*parse*) Board en tenseur avec encoding one-hot
+- [ ] Simplification quant au mouvement bizzare
 **** Conclusion
-- [ ] 
+- [ ] Tâche grandement simplifié par l'existence de librairies
+- [ ] Quelques difficultés techiniques aux niveau de l'environnment
+  (chialer encore sur ~get_parents()~)
 *** Résultats
 **** Contexte
-- [ ] 
+- [ ] Sous section entraînement avec les hyperparamètres
+  - [ ] Nombre de pas max pour un match
+  - [ ] Nombre d'itérations
+- [ ] Choix des deux fonctions de pertes
+- [ ] Choix de proxy (récompense)
 **** Contenu
-- [ ] 
+- [ ] Montrer fonction de perte:
+  - [ ] Monter TB: belle convergence
+  - [ ] Montre forward looking: pas de convergence
+- [ ] Présenter et comparer les deux fonction de récompenses
+- [ ] Discuter du biais de victoire (absent, présent, ampleur)
+- [ ] Distribution du nombre de pièces mangées (visualisations!)
+- [ ] Distribution du score
+- [ ] Distribution des probabilités de victoire
+- [ ] Discuter du temps d'entraînement
+- [ ] Montrer une partie échantillonnée complète en annexe
 **** Conclusion
-- [ ] 
+- [ ] Entraînement de stockfish est A-OK
+- [ ] Capacité à orienter le modèle à faire gagner un joueur
+- [ ] Limitation quand au comportement de modèle car environnement non
+  stochastique
 *** Conclusions
 **** Contexte
-- [ ] 
+- [ ] Entraîné GFlowNet
 **** Contenu
-- [ ] 
+- [ ] Capable de le biaiser
+- [ ] Principal facteur d'intérêt est la fonction de récompense
 **** Conclusion
-- [ ] 
+- [ ] FUTUR: Concevoir un environnement stochastique avec GFlowNet et les
+  échecs.
 *** Contributions
 Demander aux 'participants d'y inscrire leur contributions (/lol/)
 *** Références

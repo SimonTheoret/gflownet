@@ -81,30 +81,89 @@
 % CCC: Contexte Contenu Conclusion
 
 \begin{abstract}
-  Les joueurs artificiels d'échec les plus performant, basés sur les
-  méthodes d'apprentissage par renforcement, sont en mesure de battre
-  les meilleurs joueurs d'échecs humain.  Dans ce rapport, nous
-  présentons GFlowChess, un modèle génératif basé sur la famille de
-  modèle GFlownet capable de simuler une partie d'échec suivant les
-  règles traditionnelle du jeu. Nous évaluons la performance du modèle
-  à l'aide de Stockfish, un moteur d'échec moderne capable d'évaluer
-  la probabilité de victoire d'un match. Nous avons testé 2 types de
-  pertes ainsi que deux fonctions de récompenses pour observer le
-  déroulement des trajectoires. Nous avons en effet été en mesure de
-  constater les effets des fonctions de récompenses sur la
+  Les joueurs artificiels d'échec les plus performant tel que
+  AlphaZero, basés sur les méthodes d'apprentissage par renforcement,
+  sont en mesure de battre les meilleurs joueurs d'échecs humain.
+  Dans ce rapport, nous présentons GFlowChess, un modèle génératif
+  basé sur la famille de modèles GFlownet capable de simuler une
+  partie d'échec suivant les règles traditionnelle du jeu à l'aide du
+  jeu autonome (\textit{self-play}). Nous évaluons la performance du
+  modèle à l'aide de Stockfish, un moteur d'échec moderne capable
+  d'évaluer la probabilité de victoire d'une partie. Nous avons testé
+  deux types de pertes ainsi que deux fonctions de récompenses pour
+  observer le déroulement des trajectoires. Nous avons en effet été en
+  mesure de constater les effets des fonctions de récompenses sur la
   distribution des trajectoires échantillonnées et de favoriser par
-  l'entremise de la fonction de récompense un joueur.
+  l'entremise de la fonction de récompense un joueur. Nous discutons
+  aussi les limitations associées au jeu autonome rencontrées durant
+  l'entraînement.
 \end{abstract}
 
-\subsection{GFlowNet}
-Les réseaux de flux génératifs (GFlowNets) sont des modèles
-d'échantillonnage séquentiels formés pour correspondre à une
-distribution donnée, où les flux peuvent représenter chaque étape dans
-les transitions stochastiques de l'environnement comme des actions du
-GFlowNet tirées d'une politique fixe. Intuitivement, nous imaginons
-que jouer aux échecs avec des GFlowNets pourrait être un bon cas
-d'utilisation et un GFlowNet peut être entraîné pour simuler la
-distribution d'une fonction de récompense.
+\section*{Introduction}
+% \subsection*{Les échecs et l'apprentissage automatique}
+% TODO: À retirer?
+Les échecs sont un jeu intellectuel notoirement difficile, compte tenu
+du nombre important de règles, de pièces et variations possibles d'un
+échiquier. En effet, le nombre de Shannon, qui représente une borne
+inférieure sur le nombre de parties d'échec légales possibles, est
+estimé à $10^{120}$. Malgré cette très grande complexité, d'important
+moteur d'échec on été introduit au cours des deux dernières
+décennies. Des moteurs d'échec, tel que Stockfish et AlphaZero, tel
+que décrit dans \citet{alphazero}, on dramatiquement bouleversé la
+scène professionnelle, en introduisant des joueurs artificiels
+entraînés à l'aide de l'apprentissage par renforcement. Ces mêmes
+modèles sont aujourd'hui les joueurs les plus performants, atteignant
+des pointage \textit{elo} surhumain.
+
+L'immense taille de l'espace de matchs possibles et l'aspect discret
+et séquentiel des échecs font de la famille GFlowNet un bon candidat
+pour échantillonner des parties d'échec et découvrir des stratégies
+innovantes. Cependant, les modèles tels que Stockfish et AlphaZero
+étant déjà extrêmement performants et capable de générer des
+stratégies peu communes, nous nous sommes attardés à comprendre
+comment nous pouvons influencer les comportements du modèles durant
+une partie en modifiant la fonction de perte ainsi que la fonction de
+récompense.
+
+Nous avons entraîné notre modèle à l'aide de deux fonctions de pertes:
+la fonction de perte \textit{Trajectory Balance Loss} introduit par
+\citet{TBLoss} ainsi que \textit{Forward Looking Loss}, décrit dans
+\citet{FLLoss}. Cette dernière fonction de perte à été choisie dans le
+but de donner des récompenses intermédiaires au modèles durant la
+construction des trajectoires. Intuitivement, cette approche
+permettrait de guider plus efficacement le modèle vers une stratégie
+efficace. De plus, nous avons entraîné GFlowChess avec types de
+fonctions de récompenses: une fonction récompensant le modèle lorsque
+les blancs sont avantagés et une autre récompensant des parties
+égales. Finalement, notre fonction de récompense est dictée par le
+moteur d'échec Stockfish
+
+Notre entraînement avec la \textit{Forward Looking Loss} c'est avéré
+infructueux: la fonction de perte n'a jamais convergé vers une perte
+acceptable. Nous sommes incertain si la cause provient d'une erreur
+d'implémentation ou bien des récompenses intermédiaires qui
+ralentissent la convergence. Nous avons cependant été en mesure
+d'entraîner avec succès GFlowChess avec la \textit{Forward Looking
+  Loss} ainsi que nos deux fonctions de proxy. Nous avons observé
+d'importantes variations du comportement dû au choix du proxy,
+impliquant que GFlowChess est capable d'apprendre à échantillonner des
+coups avantageux en fonction du proxy choisi.
+
+\section*{Revue de la littérature}
+GFlowNet étant une famille de modèles génératifs récents, la
+littérature est limitée.Les GFLowNets sont une méthode
+d’échantillonage capable de sélectionner des candidats diversifiés
+depuis une fonction de récompense. Les méthodes GFlowNets étaient
+initialement présentées comme un substitut au méthodes d’inférences
+amorties, telle que la chaîne de Markov Monte Carlo (MCMC),
+\cite{gflownetfoundation}. Néanmoins, l'intersection de
+l'apprentissage automatique et des échecs est un domaine de recherche
+et d'expérimentation actif depuis plusieurs années. Parmi le
+développements les plus récents, nous pouvons compter Stockfish, le
+moteur d'échec dont l'architecture est décrite dans par
+\citet{stockfish}. AlphaZero, modèle plus récent et adapté aussi bien
+échecs qu'au jeu de Go, est un développement récent démontrant les
+capacités surhumaines des modèles de d'apprentissage automatique.
 
 \subsection{Stockfish}
 Nous obtenons la fonction de récompense des échecs de Stockfish, un
@@ -239,7 +298,6 @@ $\alpha d$, où $d$ représente le nombre de pièces éliminées durant une
 partie et $\alpha$ correspond au poids attribué à ce terme. Ce nouveau
 terme inciterait le modèle à faire des coups plus agressifs, tout en
 maintenant un score Stockfish élevé.
-\end{abstract}
 % content will be automatically hidden during submission
 
 % print bibliography -- for bibtex / natbib, use:
@@ -247,7 +305,7 @@ maintenant un score Stockfish élevé.
 
 % and for biber / biblatex, use:
 
-% \printbibliography
+\bibliographystyle{latex-simple} \bibliography{references}
 
 % supplemental material -- everything hereafter will be suppressed
 %  during submission time if the hidesupplement option is provided!
