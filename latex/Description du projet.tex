@@ -136,7 +136,8 @@ efficace. De plus, nous avons entraîné GFlowChess avec types de
 fonctions de récompenses: une fonction récompensant le modèle lorsque
 les blancs sont avantagés et une autre récompensant des parties
 égales. Finalement, notre fonction de récompense est dictée par le
-moteur d'échec Stockfish
+moteur d'échec Stockfish, qui évalue l'échiquier et renvoie les
+statistiques associées.
 
 Notre entraînement avec la \textit{Forward Looking Loss} c'est avéré
 infructueux: la fonction de perte n'a jamais convergé vers une perte
@@ -150,51 +151,139 @@ impliquant que GFlowChess est capable d'apprendre à échantillonner des
 coups avantageux en fonction du proxy choisi.
 
 \section*{Revue de la littérature}
-GFlowNet étant une famille de modèles génératifs récents, la
-littérature est limitée.Les GFLowNets sont une méthode
-d’échantillonage capable de sélectionner des candidats diversifiés
-depuis une fonction de récompense. Les méthodes GFlowNets étaient
-initialement présentées comme un substitut au méthodes d’inférences
-amorties, telle que la chaîne de Markov Monte Carlo (MCMC),
-\cite{gflownetfoundation}. Néanmoins, l'intersection de
-l'apprentissage automatique et des échecs est un domaine de recherche
-et d'expérimentation actif depuis plusieurs années. Parmi le
+Les GFLowNets sont une méthode d’échantillonage capable de
+sélectionner des candidats diversifiés depuis une fonction de
+récompense. Les méthodes GFlowNets étaient initialement présentées
+comme un substitut au méthodes d’inférences amorties, telle que la
+chaîne de Markov Monte Carlo (MCMC), \cite{gflownetfoundation}. Les
+GFlowNet sont une famille de modèles génératifs récents, rendant la
+littérature limitée. Néanmoins, l'intersection de l'apprentissage
+automatique et des échecs est un domaine de recherche et
+d'expérimentation actif depuis plusieurs années. Parmi le
 développements les plus récents, nous pouvons compter Stockfish, le
 moteur d'échec dont l'architecture est décrite dans par
-\citet{stockfish}. AlphaZero, modèle plus récent et adapté aussi bien
-échecs qu'au jeu de Go, est un développement récent démontrant les
-capacités surhumaines des modèles de d'apprentissage automatique.
+\citet{stockfish}. AlphaZero, adapté aussi bien échecs qu'au jeu de
+Go, est un développement récent démontrant les capacités surhumaines
+des modèles de d'apprentissage automatique. Finalement, le projet Maia
+Chess, développé par \citet{maia}, est application nouvelle de
+l'apprentissage machine qui entraîne un modèle à jouer comme un humain
+à l'aide de l'apprentissage par renforcement basé sur les commentaires
+humains (RLHF).
 
-\subsection{Stockfish}
-Nous obtenons la fonction de récompense des échecs de Stockfish, un
-moteur d'échecs open-source, qui utilise une variété d'algorithmes
-pour évaluer les positions et faire des mouvements. Il peut donner un
-score de chaque étape en fonction de la qualité de l'étape dans le
-plateau actuel. C'est l'un des meilleurs algorithmes de récompense
-incluant des techniques comme l'élagage alpha-bêta, la recherche de
-variation principale, la recherche de quiescence et diverses
-heuristiques pour l'évaluation des positions.
+Les certaines avancées récentes en lien avec les GFlowNets ont été
+utilisés dans le rapport. Notamment l'usage de la fonction de perte
+\textit{Trajectory Balance Loss}, qui se présente comme supérieure aux
+fonctions précédentes dans le cas de longue trajectoire. La
+\textit{Forward Looking Loss}, qui permet de calculer la récompense
+aux étapes intermédiaires au lieu de calculer la récompense uniquement
+à la fin de la trajectoire, a été utilisé afin de favoriser les coups
+de qualité.
 
-\subsection{Perte TB}
-La perte d'équilibre de trajectoire (Trajectory Balance loss) est
-l'objectif qui peut définir une politique qui échantillonne exactement
-de la distribution cible efficacement. Cet objectif est calculé sur
-des séquences d'actions complètes échantillonnées (trajectoires) de
-l'état initial à un état terminal, contrairement aux objectifs de
-correspondance de flux et d'équilibre détaillé.
-\\
-\section{Entraîner avec succès un modèle GFlowNet}
-Actuellement, nous avons développé des méthodes clés pour
-l'environnement de jeu, notamment l'initialisation de l'environnement,
-la définition de l'espace des actions, la génération d'un masque des
-actions invalides ,l'exécution d'un pas du jeu et la génération des
-parents d'un état. Nous avons également mis en place un proxy pour
-l'analyse des positions avec Stockfish.
+Quoique notre modèle est entraîné en jeu autonome dans un
+environnement déterministe, des progrès ont été fait pour permettre
+d'entraîner GFlowNet dans des environnements
+stochastiques. \citet{stochasticflow} on notamment entraîné un modèle
+GFlowNet dans un environnement stochastique, pavant la voix pour
+l'entraînement d'un modèle GFlowNet contre un programme d'échec.
 
-Ce document décrit nos avancées jusqu'à présent, les résultats et les
-défis rencontrés. En combinant les capacités de GFlowNet et de
-Stockfish, notre objectif est de créer un joueur d'échecs compétitif
-capable de rivaliser avec lui-même.
+\section*{Résultats}
+
+\subsection*{Librairies et ressources}
+Nous avons fait principalement usage de 2 librairies:
+\citet{hernandez-garcia2024} et \textit{Python Chess}. La première
+librairie permet de faire abstraction du modèle GFlowNet et de ne
+concevoir que l'environnement. La seconde librairie nous permet de
+gérer la complexité des échecs et fournit presque tous les éléments
+nécessaire à l'implémentation d'un environnement complet d'échec. De
+plus, pour être en mesure d'évaluer la qualité des parties ainsi que
+des coups jouer par GFlowChess, nous avons fais usage du moteur
+d'échec Stockfish. Ce dernier est une variété de modèle de réseau de
+neurone optimisé pour l'évaluation de jeux tels que le \textit{shogi}
+et les échecs. Pour augmenter la vitesse d'entraînement, nous avons
+paralléliser à l'aide du module Python \textit{multiprocessing} la
+fonction de proxy.
+
+\subsection*{Environnement et simplifications}
+Nous avons modélisé l'environnement avec l'aide de l'objet
+\textit{Board} de la librairie \textit{Python Chess}. Cet objet
+contient tous les coups passé, le nombre de coups joués jusqu'à
+présent, la position des pièces sur l'échiquier et les coups possibles
+d'un côté et de l'autre. Nous avons modéliser les actions comme étant
+un pair d'entier appartenant à $[0,63]^{2}$. Celà correspond à
+associer à tout mouvement d'une pièce une case initiale,
+potentiellement vide, ainsi qu'une case finale, pouvant être vide ou
+pleine.  Cette modélisation simple nous permet d'interfacer facilement
+avec l'objet \textit{Board} puisque cette notation est similaire à la
+notation UCI. De plus, elle permet de représenter un échiquier sans
+ambiguïté comme suit:
+
+\begin{figure}[H]
+  \centering \setchessboard{color=black,clearboard,showmover=false}
+  \chessboard[ pgfstyle= {[base,at={\pgfpoint{0pt}{-0.3ex}}]text},
+    text= \fontsize{1.2ex}{1.2ex}\bfseries
+    \sffamily\getfieldnumber\currentwq, markboard]
+  \caption{cases du tableau d'échiquier encodées en chiffres}
+\end{figure}
+
+Cette façon de modéliser les actions possibles de l'agent nous permet
+de facilement masquer les actions invalides:
+
+\begin{figure}[H]
+  \centering
+	\begin{subfigure}[b]{0.45\textwidth}
+	  \centering \setchessboard{showmover=false}
+          \chessboard[setfen=r5k1/1b1p1ppp/p7/1p1Q4/2p1r3/PP4Pq/BBP2b1P/R4R1K
+            w - - 0 20, pgfstyle=border,markfields={d4,d6},
+            color=blue!50, colorbackfield=c5, pgfstyle=color,
+            opacity=0.5, color=red, markfield={d5}]
+	  \caption{mouvements valides}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+	  \centering \setchessboard{showmover=false}
+          \chessboard[setfen=r5k1/1b1p1ppp/p7/1p6/2p1r3/PP1Q2Pq/BBP2b1P/R4R1K
+            b - - 0 20, pgfstyle=border,markfields={d4,d6},
+            color=blue!50, colorbackfield=c5, pgfstyle=color,
+            opacity=0.5, color=red, markfield={d5}]
+	  \caption{Mouvement invalide}
+	\end{subfigure}
+\end{figure}
+Nous avons implémenter une fonction (\textit{get_{parents}})nous
+permettant d'obtenir, pour un état donné, tous les états qui auraient
+pu mener à ce même état. Or, pour mettre en oeuvre cette fonction,
+nous avons fait une simplification concernant les roques. Les roques
+sont un mouvements permettant d'échanger sur la même ligne le roi et
+un tour de la même couleur. En effet, ceux-ci sont complexes à
+modélisés et sont rares en pratique. De plus, nous avons limité à 20
+coups la durée des parties, les rendant un plus courte que la partie
+d'échec moyenne. Cette fonction \textit{get_parents} est complexe à
+implémenter de par l'asymétrie des mouvements des pions.
+
+Finalement, nous avons implémenter un \textit{FenParser}, c'est-à-dire
+une transformation prenant un \textit{Board} et le transformant en un
+tenseur de $N\times64\times13$, où $N$ est la taille du lot
+(\textit{Batch}), 64 corresponds au 64 cases de l'échiquier et $13$
+correspond au 13 pièces possibles sur une case.
+
+\subsection*{Fonctions de perte et de récompense}
+Nous avons utilisé deux fonctions de pertes pour entraîner nos
+modèles: la fonction \textit{Trajectory Balance} ainsi que la fonction
+\textit{Forward Looking}. De plus, nous avons fait usage de deux
+fonctions de récompenses suivantes:
+\begin{equation*}
+  R_{1}(x) = - \mathbb{E}[X], \quad \text{où X=1 si les blancs gagne, 0 sinon},
+\end{equation*} ainsi que
+\begin{equation*}
+  R_{2}(x) = - \frac{1}{1+10^{|c|/4}}, \quad \text{où $c$ est le score \textit{centipawn}}.
+\end{equation*}Le score centipawn est une mesure de l'avantage des
+blancs par rapport aux noirs. En effet, un score centipawn de -100 est
+équivalent à ce que le joueur blanc perde un pion. Inversement, un
+score centipawn de 100 est équivalent à ce que le joueur noir perde un
+pion. La fonction de récompense $R_{1}$ devrait inciter GFlowChess à
+faire gagner les blancs, alors que la fonction $R_{2}$ devrait inciter
+GFlowNet à jouer un match aussi serré que possible, sans avantagé
+aucun joueur.
+
+
 \subsection*{Description et résultat des méthodes développées :}
 
 %Actuellement, les méthodes suivantes ont été développées :
@@ -216,46 +305,6 @@ capable de rivaliser avec lui-même.
 % d'échiquier correspondant à la notation
 % FEN %suivante : \texttt{'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'}.  Dans cette notation les rangées du tableau sont séparées par des "/", le nombre de case vide de droite %à gauche est représenté par des chiffres, les pièces blanches sont représentées par des lettres en %majuscules et les lettres ont les significations suivantes : \{'r': 'rook','n': 'knight','b': %'bishop','q': 'queen','k': 'king'\}
 
-\textbf{Espace des actions :} \\
-L'espace des actions est défini comme l'ensemble de toutes les actions
-possibles. Une action est définie comme une paire de cases (origine,
-destination) sur l'échiquier.
-
-\begin{figure}[H]
-  \centering \setchessboard{color=black,clearboard,showmover=false}
-  \chessboard[ pgfstyle= {[base,at={\pgfpoint{0pt}{-0.3ex}}]text},
-    text= \fontsize{1.2ex}{1.2ex}\bfseries
-    \sffamily\getfieldnumber\currentwq, markboard]
-  \caption{cases du tableau d'échiquier encodées en chiffres}
-\end{figure}
-
-[17,35] est un exemple d'action possible qui permet d'aller de la case
-17 vers la case 35 comme illustré dans la figure 2.
-
-\textbf{Masque des actions invalides :} \\
-Un masque est généré pour indiquer les actions invalides à partir de
-l'état actuel du jeu. Cela permet d'éviter de choisir des actions qui
-ne respectent pas les règles du jeu.
-
-\begin{figure}[H]
-  \centering
-	\begin{subfigure}[b]{0.45\textwidth}
-	  \centering \setchessboard{showmover=false}
-          \chessboard[setfen=r5k1/1b1p1ppp/p7/1p1Q4/2p1r3/PP4Pq/BBP2b1P/R4R1K
-            w - - 0 20, pgfstyle=border,markfields={d4,d6},
-            color=blue!50, colorbackfield=c5, pgfstyle=color,
-            opacity=0.5, color=red, markfield={d5}]
-	  \caption{mouvements valides}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.45\textwidth}
-	  \centering \setchessboard{showmover=false}
-          \chessboard[setfen=r5k1/1b1p1ppp/p7/1p6/2p1r3/PP1Q2Pq/BBP2b1P/R4R1K
-            b - - 0 20, pgfstyle=border,markfields={d4,d6},
-            color=blue!50, colorbackfield=c5, pgfstyle=color,
-            opacity=0.5, color=red, markfield={d5}]
-	  \caption{Mouvement invalide}
-	\end{subfigure}
-\end{figure}
 
 En adoptant l'encodage des cases de la figure 2, la reine Blanche à la
 case 35 peut effectuer les actions : [34,33], [34,42] et [34,26] comme

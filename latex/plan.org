@@ -50,39 +50,38 @@ loss, intermediary step. Voici les sources:
 - [[https://arxiv.org/abs/2302.01687][Forward Looking loss]]
 Mentionner l'excellente documentation de l'équipe de Stockfish: [[https://github.com/official-stockfish/nnue-pytorch/blob/master/docs/nnue.md#halfkp][Docs]]?
 Mentionner l'usage de GFlowNet en contexte de [[https://arxiv.org/abs/2310.02779][zero-sum
-games]]. Important de discuter de [[Maia][Maia]], un modèle qui réplique le
+games]]. Important de discuter de [[https://arxiv.org/abs/2006.01855][Maia]] , un modèle qui réplique le
 comportement humain. Finalement, citer AlphaZero, un programme plus
 général que seulement au échec mais qui a battu les meilleurs
 programmes d'échec.
 **** Contexte
 - [X] GFlowNet comme modèle récent
-- [ ] Échecs déjà touché par le ML:
-  - [ ] Stockfish, un moteur d'échec (évaluation)
-  - [ ] Maia, un modèle qui joue comme un humain
-  - [ ] AlphaZero, le sur-humain
-- [ ] D'autres jeux tel que connect for touché par GFLowNet
+- [X] Échecs déjà touché par le ML:
+  - [X] Stockfish, un moteur d'échec (évaluation)
+  - [X] Maia, un modèle qui joue comme un humain
+  - [X] AlphaZero, le sur-humain
 **** Contenu
-- [ ] Introduire FlowMatching ou Forward Looking loss
-- [ ] Introduire Trajectory Balance
-- [ ] Discuter de Stockfish comme outils d'évaluation
-- [ ] Parler de Zero-sum games (environnement stochastique)
+- [X] Introduire FlowMatching ou Forward Looking loss
+- [X] Introduire Trajectory Balance
+- [X] Discuter de Stockfish comme outils d'évaluation
+- [X] Parler de Zero-sum games (environnement stochastique)
 **** Conclusion
-- [ ] Récent mais plein de promesse (mettons)
+- [X] Récent mais plein de promesse (mettons)
 *** Méthodes
 Reprendre et améliorer le contenu de devoir 'final'
 **** Contexte
-- [ ] Aborder rapidement la complexité des échecs
-- [ ] Environnement non stochastique: GFlowNet joue contre lui-même
-- [ ] Implémenté avec librairie du prof
-- [ ] Usage de la librairie python-chess pour simuler notre environnement
+- [X] Aborder rapidement la complexité des échecs
+- [X] Environnement non stochastique: GFlowNet joue contre lui-même
+- [X] Implémenté avec librairie du prof
+- [X] Usage de la librairie python-chess pour simuler notre environnement
 **** Contenu
-- [ ] Choix de proxy (parler de nos deux choix)
-- [ ] Multi-processing pour Stockfish
-- [ ] Fonction de pertes
-- [ ] Prendre quelques images de plateau
-- [ ] Chialer sur ~get_parents()~
-- [ ] Transformer (*parse*) Board en tenseur avec encoding one-hot
-- [ ] Simplification quant au mouvement bizzare
+- [X] Choix de proxy (parler de nos deux choix)
+- [X] Multi-processing pour Stockfish
+- [X] Fonction de pertes
+- [X] Prendre quelques images de plateau
+- [X] Chialer sur ~get_parents()~
+- [X] Transformer (*parse*) Board en tenseur avec encoding one-hot
+- [X] Simplification quant au mouvement bizzare
 **** Conclusion
 - [ ] Tâche grandement simplifié par l'existence de librairies
 - [ ] Quelques difficultés techiniques aux niveau de l'environnment
