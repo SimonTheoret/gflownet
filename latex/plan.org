@@ -83,24 +83,24 @@ Reprendre et améliorer le contenu de devoir 'final'
 - [X] Transformer (*parse*) Board en tenseur avec encoding one-hot
 - [X] Simplification quant au mouvement bizzare
 **** Conclusion
-- [ ] Tâche grandement simplifié par l'existence de librairies
-- [ ] Quelques difficultés techiniques aux niveau de l'environnment
+- [X] Tâche grandement simplifié par l'existence de librairies
+- [X] Quelques difficultés techiniques aux niveau de l'environnment
   (chialer encore sur ~get_parents()~)
 *** Résultats
 **** Contexte
-- [ ] Sous section entraînement avec les hyperparamètres
-  - [ ] Nombre de pas max pour un match
-  - [ ] Nombre d'itérations
-- [ ] Choix des deux fonctions de pertes
-- [ ] Choix de proxy (récompense)
+- [X] Sous section entraînement avec les hyperparamètres
+  - [X] Nombre de pas max pour un match
+  - [X] Nombre d'itérations
+- [X] Choix des deux fonctions de pertes
+- [X] Choix de proxy (récompense)
 **** Contenu
-- [ ] Montrer fonction de perte:
-  - [ ] Monter TB: belle convergence
-  - [ ] Montre forward looking: pas de convergence
+- [X] Montrer fonction de perte:
+  - [X] Monter TB: belle convergence
+  - [X] Montre forward looking: pas de convergence
 - [ ] Présenter et comparer les deux fonction de récompenses
-- [ ] Discuter du biais de victoire (absent, présent, ampleur)
+- [X] Discuter du biais de victoire (absent, présent, ampleur)
 - [ ] Distribution du nombre de pièces mangées (visualisations!)
-- [ ] Distribution du score
+- [X] Distribution du score
 - [ ] Distribution des probabilités de victoire
 - [ ] Discuter du temps d'entraînement
 - [ ] Montrer une partie échantillonnée complète en annexe

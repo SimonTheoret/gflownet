@@ -46,6 +46,8 @@
             # pythonPackages.numpy
             # pythonPackages.pytorch-bin
             pythonPackages.virtualenv
+            pythonPackages.pandas
+            pythonPackages.numpy
             nodePackages_latest.pyright
             stockfish
             texlive.combined.scheme-full
@@ -58,7 +60,7 @@
             shfmt
             isort
             nixfmt
-            nil 
+            nil
           ];
 
           shellHook = ''
