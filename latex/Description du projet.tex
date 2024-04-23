@@ -109,7 +109,7 @@ inférieure sur le nombre de parties d'échec légales possibles, est
 estimé à $10^{120}$. Malgré cette très grande complexité, d'important
 moteur d'échec on été introduit au cours des deux dernières
 décennies. Des moteurs d'échec, tel que Stockfish et AlphaZero, tel
-que décrit dans \citet{alphazero}, on dramatiquement bouleversé la
+que décrit dans \citet{AlphaZero}, on dramatiquement bouleversé la
 scène professionnelle, en introduisant des joueurs artificiels
 entraînés à l'aide de l'apprentissage par renforcement. Ces mêmes
 modèles sont aujourd'hui les joueurs les plus performants, atteignant
@@ -162,10 +162,10 @@ automatique et des échecs est un domaine de recherche et
 d'expérimentation actif depuis plusieurs années. Parmi le
 développements les plus récents, nous pouvons compter Stockfish, le
 moteur d'échec dont l'architecture est décrite dans par
-\citet{stockfish}. AlphaZero, adapté aussi bien échecs qu'au jeu de
+\citet{Stockfish}. AlphaZero, adapté aussi bien échecs qu'au jeu de
 Go, est un développement récent démontrant les capacités surhumaines
 des modèles de d'apprentissage automatique. Finalement, le projet Maia
-Chess, développé par \citet{maia}, est application nouvelle de
+Chess, développé par \citet{Maia}, est application nouvelle de
 l'apprentissage machine qui entraîne un modèle à jouer comme un humain
 à l'aide de l'apprentissage par renforcement basé sur les commentaires
 humains (RLHF).
@@ -209,7 +209,7 @@ Nous avons modélisé l'environnement avec l'aide de l'objet
 contient tous les coups passé, le nombre de coups joués jusqu'à
 présent, la position des pièces sur l'échiquier et les coups possibles
 d'un côté et de l'autre. Nous avons modéliser les actions comme étant
-un pair d'entier appartenant à $[0,63]^{2}$. Celà correspond à
+un pair d'entier appartenant à $[0,63]^{2}$. Cela correspond à
 associer à tout mouvement d'une pièce une case initiale,
 potentiellement vide, ainsi qu'une case finale, pouvant être vide ou
 pleine.  Cette modélisation simple nous permet d'interfacer facilement
@@ -281,13 +281,13 @@ fonctions de récompenses suivantes:
 \begin{equation*}
   R_{2}(x) = - \frac{1}{1+10^{|c|/4}}, \quad \text{où $c$ est le score \textit{centipawn}}.
 \end{equation*}Le score centipawn est une mesure de l'avantage des
-blancs par rapport aux noirs. En effet, un score centipawn de -100 est
-équivalent à ce que le joueur blanc perde un pion. Inversement, un
-score centipawn de 100 est équivalent à ce que le joueur noir perde un
-pion. La fonction de récompense $R_{1}$ devrait inciter GFlowChess à
-faire gagner les blancs, alors que la fonction $R_{2}$ devrait inciter
-GFlowNet à jouer un match aussi serré que possible, sans avantagé
-aucun joueur.
+blancs par rapport aux noirs. Nous avons normaliser le score centipawn
+original de façon à ce qu'un score centipawn de -1 est équivalent à ce
+que le joueur blanc perde un pion. Inversement, un score centipawn de
+1 est équivalent à ce que le joueur noir perde un pion. La fonction de
+récompense $R_{1}$ devrait inciter GFlowChess à faire gagner les
+blancs, alors que la fonction $R_{2}$ devrait inciter GFlowNet à jouer
+un match aussi serré que possible, sans avantagé aucun joueur.
 
 \section*{Résultats et échecs}
 \subsection*{Entraînements et échecs}
@@ -316,32 +316,40 @@ nous avons obtenons une distribution d'échantillonage fortement biaisé
 en faveur des blancs. En effet, voici la distribution lissée par KDE
 du score des blancs sur 1000 échantillons:
 
-\begin{figure}[H]
-  \centering \includegraphics[scale=0.5]{kdeblancs.png}
-  \caption{Distribution des scores \textit{centipawn} avec récompense $R_{1}$}
-	\label{kdeblancs}
-\end{figure}
-Tel que semble l'indiqué la figure précédente, utiliser le proxy
-$R_{1}$ favorise fortement les blancs, avec un score
-\textit{centipawn} moyen de 2.90.
-À l'inverse, en utilisant la fonction de perte $R_{2}$, nous obtenons
-la distribution de score suivante, centrée à -0.26:
 
 \begin{figure}[H]
-  \centering \includegraphics[scale=0.5]{kdescoreegaux.png}
-  \caption{Distribution des scores \textit{centipawn} avec récompense $R_{2}$}
-	\label{kdescoreegaux}
+  \centering
+	\begin{subfigure}[b]{0.45\textwidth}
+	  \centering \includegraphics[scale=0.5]{kdeblancs.png}
+	  \caption{Distribution des scores \textit{centipawn} avec
+            récompense $R_{1}$}
+		\label{kdeblancs}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+	  \centering \includegraphics[scale=0.5]{kdescoreegaux.png}
+	  \caption{Distribution des scores \textit{centipawn} avec
+            récompense $R_{2}$}
+		\label{kdescoreegaux}
+	\end{subfigure}
 \end{figure}
-Les statistiques sommaires des deux distributions sont dans la table suivante:
+
+Tel que semble l'indiquer la figure précédente, utiliser le proxy
+$R_{1}$ favorise fortement les blancs, avec un score
+\textit{centipawn} moyen de 2.90.  À l'inverse, en utilisant la
+fonction de perte $R_{2}$, nous obtenons la distribution de score
+suivante, centrée à -0.26:
+
+Les statistiques sommaires des deux distributions sont incrites dans
+la table suivante:
 
 \begin{table}[!ht]
-    \centering
-    \begin{tabular}{|l|l|l|l|l|l|l|l|}
-    \hline
-        ~ & Mean & Std & Min & Max & 25\% & 50\% & 75\% \\ \hline
-        R\_1 & -0.267 & 1.319 & -6.17 & 4.420 & -0.502 & 0.000 & 0.390 \\ \hline
-        R\_2 & 2.902 & 2.909 & -6.870 & 12.900 & 1.007 & 3.300 & 5.170 \\ \hline
-    \end{tabular}
+  \centering
+	\begin{tabular}{|l|l|l|l|l|l|l|l|}
+	  \hline
+	  ~     & Mean   & Std   & Min    & Max    & 25\%   & 50\%  & 75\%  \\ \hline
+	  $R_1$ & 2.902  & 2.909 & -6.870 & 12.900 & 1.007  & 3.300 & 5.170 \\ \hline
+	  $R_2$ & -0.267 & 1.319 & -6.17  & 4.420  & -0.502 & 0.000 & 0.390 \\ \hline
+	\end{tabular}
 \end{table}
 Il est intéressant de noter que, quoique la moyenne soit légèrement
 inférieure à 0, la médiane est \textbf{exactement} 0. Il est clair que
@@ -350,15 +358,81 @@ la fonction $R_{1}$. Inversement, la distribution du score engendré
 avec $R_{2}$ est fortement concentré autour de 0, ce qui correspond à
 l'effet désiré de la fonction $R_{2}$.
 \subsection*{Probabilités de victoire avec récompenses $R_{1}$ et $R_{2}$}
-% TODO:  À COMPLÉTER
+% TODO: À COMPLÉTER avec graphiques
 
 \subsection*{Agressivité en fonction de $R_{1}$ et $R_{2}$}
 Nous pouvons traiter l'agressivité du modèle comme étant le nombre de
-pièces mangées durant une partie. 
+pièces mangées durant une partie. Les distributions du nombre de
+pièces restantes après la fin du trajectoire sont présentés dans la
+figure suivante:
+\begin{figure}[H]
+  \centering
+	\begin{subfigure}[b]{0.45\textwidth}
+	  \centering \includegraphics[scale=0.5]{deadblanc.png}
+	  \caption{Distribution du nombre de pièces restantes avec
+            récompense $R_{1}$}
+		\label{deadblancs}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+	  \centering \includegraphics[scale=0.5]{deadegaux.png}
+	  \caption{Distribution du nombre de pièces restantes avec
+            récompense $R_{2}$}
+		\label{deadegaux}
+	\end{subfigure}
+\end{figure}
+
+Il est intéressant de noter la différence entre la distribution de la
+figure \ref{kdeblancs} ainsi que \ref{deadblancs}.
+\begin{table}[!ht]
+  \centering
+	\begin{tabular}{|l|l|l|l|l|l|l|l|}
+	  \hline
+	  ~     & Mean   & Std   & Min    & Max    & 25\%   & 50\%   & 75\%   \\ \hline
+	  $R_1$ & 31.981 & 0.150 & 30.000 & 32.000 & 32.000 & 32.000 & 32.000 \\ \hline
+	  $R_2$ & 31.175 & 0.925 & 27.000 & 32.000 & 31.000 & 31.000 & 32.000 \\ \hline
+	\end{tabular}
+\end{table}
+
+En effet, en tenant compte du fait qu'une différence de score de 1
+équivaut à un pion en moins, on peut en conclure que les blancs on
+appris a éliminer des pièces de plus grande valeur, indiquant que le
+modèle à appris à plus valoriser les pièces de grande valeur à l'aide
+de la fonction de récompense $R_{1}$.
+
+À l'inverse, en utilisant la fonction de récompense $R_{2}$, notre
+modèle évite d'éliminer quelconque pièces. Ce comportement engendre
+des parties passives.
+
+\section*{Conclusion}
+Nous avons entraîné un modèle basé sur les GFlowNets, capable de
+simuler une partie d'échec à l'aide du self-play. Nous avons entraîner
+le modèle avec deux fonctions de pertes différentes avec un succès
+partiel. De plus, nous avons exploré les différences de comportement
+engendrée par le choix de fonction de récompense. Nous avons montré
+que le modèle peut apprendre la valeur intrinsèque des pièces par le
+biais de la fonction de récompense et adapte son style de jeu selon la
+valeur des pièces.
+
+Plusieurs pistes de recherches restent ouvertes dans l'intersection
+entre GFlowNet et les échecs. Une piste intéressante serait la
+modélisation d'un environnement d'échec stochastique dans lequel
+GFlowNet peut jouer contre lui-même ou bien un autre joueur. Cela
+permettrait de faire apprendre au modèle à gagner des parties
+d'échecs dans un environnement compétitif.
+
+
+\section*{Contributions des membre de l'équipe}
+\subsubsection*{Simon Théorêt}
+\subsubsection*{Olivier Déry-Prévost}
+\subsubsection*{Sidya Galakho}
+\subsubsection*{Yizhan Li}
+
 \bibliographystyle{latex-simple} \bibliography{references}
+
 
 % supplemental material -- everything hereafter will be suppressed
 %  during submission time if the hidesupplement option is provided!
 \appendix
+
 
 \end{document}

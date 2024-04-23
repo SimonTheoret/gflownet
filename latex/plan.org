@@ -97,26 +97,26 @@ Reprendre et améliorer le contenu de devoir 'final'
 - [X] Montrer fonction de perte:
   - [X] Monter TB: belle convergence
   - [X] Montre forward looking: pas de convergence
-- [ ] Présenter et comparer les deux fonction de récompenses
+- [X] Présenter et comparer les deux fonction de récompenses
 - [X] Discuter du biais de victoire (absent, présent, ampleur)
-- [ ] Distribution du nombre de pièces mangées (visualisations!)
+- [X] Distribution du nombre de pièces mangées (visualisations!)
 - [X] Distribution du score
 - [ ] Distribution des probabilités de victoire
 - [ ] Discuter du temps d'entraînement
 - [ ] Montrer une partie échantillonnée complète en annexe
 **** Conclusion
-- [ ] Entraînement de stockfish est A-OK
+- [X] Entraînement de stockfish est A-OK
 - [ ] Capacité à orienter le modèle à faire gagner un joueur
 - [ ] Limitation quand au comportement de modèle car environnement non
   stochastique
 *** Conclusions
 **** Contexte
-- [ ] Entraîné GFlowNet
+- [X] Entraîné GFlowNet
 **** Contenu
-- [ ] Capable de le biaiser
-- [ ] Principal facteur d'intérêt est la fonction de récompense
+- [X] Capable de le biaiser
+- [X] Principal facteur d'intérêt est la fonction de récompense
 **** Conclusion
-- [ ] FUTUR: Concevoir un environnement stochastique avec GFlowNet et les
+- [X] FUTUR: Concevoir un environnement stochastique avec GFlowNet et les
   échecs.
 *** Contributions
 Demander aux 'participants d'y inscrire leur contributions (/lol/)
