@@ -23,7 +23,7 @@ section Stockfish)
 Les dépendances nécessaire au bon fonctionnement de GFlowChess sont
 contenues dans le fichier Pipfile. Une unique dépendance
 supplémentaire est ajoutée aux dépendances initiale du package
-GFlowNet: python chess.
+GFlowNet: python chess: https://pypi.org/project/chess/
 
 ## Stockfish
 Pour pouvoir entraîner le modèle, il est nécessaire d'avoir défini la
